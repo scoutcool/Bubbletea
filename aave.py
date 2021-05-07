@@ -81,26 +81,26 @@ df_aave_flashloans_by_reserve =  df_aave_flashloans.groupby(['reserve.symbol']).
 df_aave_flashloans_by_reserve = df_aave_flashloans_by_reserve.rename(columns={'reserve.symbol':'symbol'}).set_index('symbol')
 
 
-# if st.checkbox('Display data: number of txs by reserve'):
-#     st.write(df_aave_flashloans_by_reserve)
+if st.checkbox('Display data: number of txs by reserve'):
+    st.write(df_aave_flashloans_by_reserve)
 
-# st.bar_chart(df_aave_flashloans_by_reserve)
-
-
-# st.subheader('Group by date')
-# df_aave_flashloans_by_date =  df_aave_flashloans.groupby(['date']).size().reset_index(name='count')
-# df_aave_flashloans_by_date['date'] = df_aave_flashloans_by_date['date'].apply(lambda x: x.strftime("%Y/%m/%d"))
-# df_aave_flashloans_by_date = df_aave_flashloans_by_date.rename(columns={'date':'date'}).set_index('date')
+st.bar_chart(df_aave_flashloans_by_reserve)
 
 
-# if st.checkbox('Display data: number of txs by day'):
-#     st.write(df_aave_flashloans_by_date)
+st.subheader('Group by date')
+df_aave_flashloans_by_date =  df_aave_flashloans.groupby(['date']).size().reset_index(name='count')
+df_aave_flashloans_by_date['date'] = df_aave_flashloans_by_date['date'].apply(lambda x: x.strftime("%Y/%m/%d"))
+df_aave_flashloans_by_date = df_aave_flashloans_by_date.rename(columns={'date':'date'}).set_index('date')
 
-# st.line_chart(df_aave_flashloans_by_date)
+
+if st.checkbox('Display data: number of txs by day'):
+    st.write(df_aave_flashloans_by_date)
+
+st.line_chart(df_aave_flashloans_by_date)
 
 
 
-st.subheader('Token rates')
+st.subheader('Token rates via CyptoCompare')
 symbols = df_aave_flashloans_by_reserve.index.values
 
 token_rates = {}
@@ -119,6 +119,7 @@ for symbol in symbols:
         st.write(df_pricing)
 
 
+st.subheader('Volume by Day')
 df_token_rates = pd.json_normalize(token_rates)
 if st.checkbox('Display flattened rates'):
     st.write(df_token_rates)
@@ -144,7 +145,6 @@ df_aave_flashloans_volume_by_date =  df_aave_flashloans_volume_by_date.groupby([
 
 
 
-st.subheader('Volume by Day')
 if st.checkbox('Display daily volume data'):
     st.write(df_aave_flashloans_volume_by_date)
 st.area_chart(df_aave_flashloans_volume_by_date)
