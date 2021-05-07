@@ -71,7 +71,7 @@ data_aave_flashloans = data_aave_flashloans["flashLoans"]
 
 
 df_aave_flashloans = pd.json_normalize(data_aave_flashloans)
-df_aave_flashloans['date'] = df_aave_flashloans['timestamp'].apply(lambda x: pd.to_datetime(math.floor(x / 86400) * 86400, unit='s'))
+df_aave_flashloans['date'] = df_aave_flashloans['timestamp'].apply(lambda x: pd.to_datetime(math.floor(x / 86400) * 86400, unit='s').strftime('%Y/%m/%d'))
 st.write(df_aave_flashloans)
 
 
@@ -88,15 +88,14 @@ st.bar_chart(df_aave_flashloans_by_reserve)
 
 
 st.subheader('Group by date')
-df_aave_flashloans_by_date =  df_aave_flashloans.groupby(['date']).size().reset_index(name='count')
-df_aave_flashloans_by_date['date'] = df_aave_flashloans_by_date['date'].apply(lambda x: x.strftime("%Y/%m/%d"))
-df_aave_flashloans_by_date = df_aave_flashloans_by_date.rename(columns={'date':'date'}).set_index('date')
+df_aave_flashloans_by_day =  df_aave_flashloans.groupby(['date']).size().reset_index(name='count')
+df_aave_flashloans_by_day = df_aave_flashloans_by_day.rename(columns={'date':'date'}).set_index('date')
 
 
 if st.checkbox('Display data: number of txs by day'):
-    st.write(df_aave_flashloans_by_date)
+    st.write(df_aave_flashloans_by_day)
 
-st.line_chart(df_aave_flashloans_by_date)
+st.line_chart(df_aave_flashloans_by_day)
 
 
 
@@ -127,27 +126,29 @@ if st.checkbox('Display flattened rates'):
 df_aave_flashloans['key_symbol_hour'] = df_aave_flashloans['reserve.symbol']+df_aave_flashloans['timestamp'].apply(lambda x: str(math.floor(x/3600) * 3600))
 df_aave_flashloans = df_aave_flashloans.merge(df_token_rates)
 
-df_aave_flashloans = df_aave_flashloans.drop(columns=['reserve.id', 'reserve.symbol', 'key_symbol_hour', 'time'])
-
+df_aave_flashloans = df_aave_flashloans[['date', 'amount', 'totalFee', 'rate', 'symbol']].copy()
 if st.checkbox('Display joint table: flashloans + rates'):
     st.write(df_aave_flashloans)
 
-df_aave_flashloans_volume = df_aave_flashloans[['date', 'amount', 'totalFee', 'rate']].copy()
-df_aave_flashloans_volume['amountUSD'] = df_aave_flashloans_volume.apply(lambda row: float(row['amount']) * float(row['rate']), axis=1)
-df_aave_flashloans_volume['feeUSD'] = df_aave_flashloans_volume.apply(lambda row: float(row['totalFee']) * float(row['rate']), axis=1)
+
+df_aave_flashloans['amountUSD'] = df_aave_flashloans.apply(lambda row: float(row['amount']) * float(row['rate']), axis=1)
+df_aave_flashloans['feeUSD'] = df_aave_flashloans.apply(lambda row: float(row['totalFee']) * float(row['rate']), axis=1)
 
 
-df_aave_flashloans_volume_by_date = df_aave_flashloans_volume.drop(columns=['amount', 'rate', 'totalFee'])
+selectedToken = st.selectbox('Pick a token',['All', *symbols])
+if selectedToken == 'All':
+    df_aave_flashloans_volume_by_token = df_aave_flashloans.copy()
+else:
+    df_aave_flashloans_volume_by_token = df_aave_flashloans.loc[df_aave_flashloans['symbol'] == selectedToken]
+    
+if st.checkbox('Display volume data'):
+    st.write(df_aave_flashloans_volume_by_token)
 
-df_aave_flashloans_volume_by_date['date'] = df_aave_flashloans_volume_by_date['date'].apply(lambda x: x.strftime("%Y/%m/%d"))
 
-df_aave_flashloans_volume_by_date =  df_aave_flashloans_volume_by_date.groupby(['date']).sum()#.reset_index(name='count')
+df_aave_flashloans_volume_by_token = df_aave_flashloans_volume_by_token.drop(columns=['amount', 'rate', 'totalFee'])
+df_aave_flashloans_volume_by_token = df_aave_flashloans_volume_by_token.groupby(['date']).sum()
 
-
-
-if st.checkbox('Display daily volume data'):
-    st.write(df_aave_flashloans_volume_by_date)
-st.area_chart(df_aave_flashloans_volume_by_date)
+st.area_chart(df_aave_flashloans_volume_by_token)
 
 
 
