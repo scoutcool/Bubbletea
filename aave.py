@@ -38,22 +38,6 @@ def load_pricing(symbol, startTimestamp, endTimestamp):
     text = json.loads(response.text)
     return text["Data"]
 
-
-# def load_pricing_debug(symbol, startTimestamp, endTimestamp):
-#     eTime = math.ceil(endTimestamp / 86400) * 86400
-#     sTime = math.floor(startTimestamp / 86400) * 86400
-#     limit = math.ceil((eTime - sTime) / 3600)
-#     url = 'https://min-api.cryptocompare.com/data/histohour?fsym=%s&tsym=USD&limit=%s&aggregate=1&e=CCCAGG&extraParams=scout&api_key=163b4f02ba446862200ecf7a64c3359b6d6bcf9d417aa27a0b5b29c9f9e619be&toTs=%s' % (symbol, limit, eTime)
-#     print('??load_pricing_debug url')
-#     print(url)
-#     response = requests.get(url)
-#     text = json.loads(response.text)
-#     return text["Data"]
-
-# dai_pricing = load_pricing_debug('DAI', startDate, endDate)
-# print(json.dumps(dai_pricing, indent=4))
-
-
 @st.cache
 def load_thegraph(url, query):
     response = requests.post(url, json={'query': query})
@@ -73,6 +57,17 @@ data_aave_flashloans = data_aave_flashloans["flashLoans"]
 df_aave_flashloans = pd.json_normalize(data_aave_flashloans)
 df_aave_flashloans['date'] = df_aave_flashloans['timestamp'].apply(lambda x: pd.to_datetime(math.floor(x / 86400) * 86400, unit='s').strftime('%Y/%m/%d'))
 st.write(df_aave_flashloans)
+
+
+
+
+# st.subheader('Histogram: number of flashloans by day')
+# max_date = df_aave_flashloans['timestamp'][0]
+# min_date = df_aave_flashloans['timestamp'][len(df_aave_flashloans)-1]
+# number_of_bins = math.ceil(max_date / 86400) - math.floor(min_date/86400)
+
+# hist_values = np.histogram(df_aave_flashloans.timestamp / 86400, bins=number_of_bins)[0]
+# st.bar_chart(hist_values)
 
 
 
@@ -126,7 +121,7 @@ if st.checkbox('Display flattened rates'):
 df_aave_flashloans['key_symbol_hour'] = df_aave_flashloans['reserve.symbol']+df_aave_flashloans['timestamp'].apply(lambda x: str(math.floor(x/3600) * 3600))
 df_aave_flashloans = df_aave_flashloans.merge(df_token_rates)
 
-df_aave_flashloans = df_aave_flashloans[['date', 'amount', 'totalFee', 'rate', 'symbol']].copy()
+df_aave_flashloans = df_aave_flashloans[['timestamp', 'date', 'amount', 'totalFee', 'rate', 'symbol']].copy()
 if st.checkbox('Display joint table: flashloans + rates'):
     st.write(df_aave_flashloans)
 
@@ -145,17 +140,21 @@ if st.checkbox('Display volume data'):
     st.write(df_aave_flashloans_volume_by_token)
 
 
-df_aave_flashloans_volume_by_token = df_aave_flashloans_volume_by_token.drop(columns=['amount', 'rate', 'totalFee'])
+df_aave_flashloans_volume_by_token = df_aave_flashloans_volume_by_token.drop(columns=['amount', 'rate', 'totalFee', 'timestamp'])
 df_aave_flashloans_volume_by_token = df_aave_flashloans_volume_by_token.groupby(['date']).sum()
 
 st.area_chart(df_aave_flashloans_volume_by_token)
 
 
 
-# st.subheader('Histogram: number of flashloans by day')
-# max_date = df_aave_flashloans['timestamp'][0]
-# min_date = df_aave_flashloans['timestamp'][len(df_aave_flashloans)-1]
-# number_of_bins = math.ceil(max_date / 86400) - math.floor(min_date/86400)
+# bins = []
+# b = startDate
+# while b < endDate:
+#     bins.append(b)
 
-# hist_values = np.histogram(df_aave_flashloans.timestamp / 86400, bins=number_of_bins)[0]
-# st.bar_chart(hist_values)
+# dpi = pd.date_range("2018-01-01", periods=3, freq="D")
+# print('dpi \n'+dpi)
+# hist_values = np.histogram(df_aave_flashloans.timestamp, bins=bins)
+# print(hist_values)
+# st.bar_chart(hist_values[0])
+
