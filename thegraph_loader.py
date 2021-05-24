@@ -54,10 +54,7 @@ class TheGraphEntity:
             shouldRebuildQuery = False
             rebuiltArguments = arguments.copy()
             if(first == np.Infinity):
-                firstNode = ArgumentNode(name=NameNode(value='first'), value=IntValueNode(value=ITEMS_PER_PAGE))
-                # for a in arguments:
-                #     rebuiltArguments.append(a)
-                rebuiltArguments.append(firstNode)
+                rebuiltArguments.append(ArgumentNode(name=NameNode(value='first'), value=IntValueNode(value=ITEMS_PER_PAGE)))
                 shouldRebuildQuery = True
             else:
                 self.limit = first
@@ -76,7 +73,7 @@ class TheGraphEntity:
                 rebuiltSelections = []
                 for f in node.selection_set.selections:
                     rebuiltSelections.append(f)
-                    rebuiltSelections.append(FieldNode(directives=f.directives, alias=f.alias, name=f.name, arguments=f.arguemtns, selection_set=arr))
+                rebuiltSelections.append(FieldNode(name=NameNode(value=self.orderBy)))
                 rebuiltSelectionSet = SelectionSetNode(selections=rebuiltSelections)
 
 
@@ -161,6 +158,7 @@ def load_subgraph_per_entity_all_pages_desc(url, entity:TheGraphEntity, rangeLow
 
 def load_subgraph(url, queryTemplate):
     entities = parse_thegraph_query(queryTemplate)
+    # print(entities)
     results = {}
     for e in entities:
         if(e.hasPages):
