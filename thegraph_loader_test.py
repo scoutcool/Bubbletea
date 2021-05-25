@@ -6,9 +6,10 @@ url_aave_subgraph = 'https://api.thegraph.com/subgraphs/name/aave/protocol'
 query_template = """
 {
     deposits(
-      where:{timestamp_gt:1609459200, timestamp_lt:1609462800}
-        orderBy: timestamp
+        where:{timestamp_gt:1609459200, timestamp_lt:1609462800}
+        orderBy: reserve
         orderDirection: desc
+        bypassPagination: true
     ) {
         reserve {
             symbol,
@@ -26,7 +27,7 @@ query_template = """
     }
 }
 """
-#To detect pagination, each entity should have orderBy, orderDirection, and range of orderBy field
+# to break the pagination limit, set `bypassPagination` to `True`
 
 data = gl.load_subgraph(url_aave_subgraph, query_template)
 for k in data.keys():

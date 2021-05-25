@@ -4,9 +4,8 @@ import pandas as pd
 import numpy as np
 import requests
 import json
-import math
 
-from graphql import parse, print_ast, ArgumentNode, NameNode, IntValueNode, FieldNode, SelectionSetNode
+from graphql import parse, print_ast, ArgumentNode, NameNode, IntValueNode, FieldNode, SelectionSetNode, ObjectValueNode, StringValueNode, ObjectFieldNode, EnumValueNode
 
 ITEMS_PER_PAGE = 2
 
@@ -14,83 +13,65 @@ class TheGraphEntity:
     def __init__(self, node) -> None:
         self.limit = np.Infinity
         self.name = node.name.value
-        self.hasPages = False
-        arguments = node.arguments
-        whereArg = ''
-        first = np.Infinity
-        for a in arguments:
-            argName = a.name.value
-            if(argName == 'first'):
-                first = int(a.value.value)
-            elif(argName == 'orderBy'):
-                self.orderBy = a.value.value
-            elif(argName == 'orderDirection'):
-                self.orderDirection = a.value.value
-            elif(argName == 'where'):
-                whereArg = a
+        self.bypassPagination = False
         
-
-        if(hasattr(whereArg, 'value') and hasattr(whereArg.value, 'fields')):
-            for f in whereArg.value.fields:
-                try:
-                    if(f.name.value.index(self.orderBy+'_gt') >= 0):
-                        self.rangeLowerVar = f.value.value
-                except ValueError as error:
-                    a = 1
-
-                try:
-                    if(f.name.value.index(self.orderBy+'_lt') >= 0):
-                        self.rangeUpperVar = f.value.value
-                except ValueError as error:
-                    a = 1
-
-
-            
-        self.initialQuery = print_ast(node)
-        
-        self.hasPages = hasattr(self, 'rangeLowerVar') and hasattr(self, 'rangeUpperVar') and hasattr(self, 'orderBy') and hasattr(self, 'orderDirection')
-        if(self.hasPages):
-            #make sure `first` is in the entity arguments
-            shouldRebuildQuery = False
-            rebuiltArguments = arguments.copy()
-            if(first == np.Infinity):
-                rebuiltArguments.append(ArgumentNode(name=NameNode(value='first'), value=IntValueNode(value=ITEMS_PER_PAGE)))
-                shouldRebuildQuery = True
-            else:
-                self.limit = first
-
-            #make sure `orderBy` field is in the entity selection
-            hasOrderByField = False
-            for f in node.selection_set.selections:
-                if(f.name.value == self.orderBy):
-                    hasOrderByField = True
-                    shouldRebuildQuery = True
-                    break
-            
-            rebuiltSelectionSet = node.selection_set
-            
-            if(hasOrderByField == False):
-                rebuiltSelections = []
-                for f in node.selection_set.selections:
-                    rebuiltSelections.append(f)
-                rebuiltSelections.append(FieldNode(name=NameNode(value=self.orderBy)))
-                rebuiltSelectionSet = SelectionSetNode(selections=rebuiltSelections)
-
-
-            #rebuild query
-            if(shouldRebuildQuery):
-                node = FieldNode(directives=node.directives, alias=node.alias, name=node.name, arguments=rebuiltArguments, selection_set=rebuiltSelectionSet)
-                self.initialQuery = print_ast(node)
-            
-
-            #pagination query
-            self.paginationQuery = self.initialQuery.replace(self.orderBy+'_gt', self.orderBy+'_gt')
-            self.paginationQuery = self.paginationQuery.replace(self.orderBy+'_gte', self.orderBy+'_gt')
-            self.paginationQuery = self.paginationQuery.replace(self.orderBy+'_lte', self.orderBy+'_lt')
-
+        self.__build_pagination_query__(node)
         pass
+
+    def __build_pagination_query__(self, node):
+        iArguments = []
+        pArguments = []
+        whereArg = None
+        for a in node.arguments:
+            if(a.name.value == 'where'):
+                whereArg = a
+                iArguments.append(a)
+            elif a.name.value == 'orderBy':
+                self.orderBy = a.value.value
+            elif a.name.value == 'orderDirection':
+                self.orderDirection = a.value.value
+            elif a.name.value == 'bypassPagination':
+                self.bypassPagination = bool(a.value.value)
+            else:
+                iArguments.append(a)
+                pArguments.append(a)
+        if not self.bypassPagination:
+            self.initialQuery = print_ast(node)
+            return
+
+        if whereArg == None:
+            ast = parse("""{stuff(where:{id_gt:"__LASTID__"}){id}}""", no_location=True)
+            whereArg = ast.definitions[0].selection_set.selections[0].arguments[0]
+        else:
+            fields = whereArg.value.fields.copy()
+            fields.append(ObjectFieldNode(name=NameNode(value='id_gt'),value=StringValueNode(value='__LASTID__')))
+            whereArg = ArgumentNode(name=NameNode(value='where'), value=ObjectValueNode(fields=fields))
+
+        pArguments.append(whereArg)
+        iArguments.append(ArgumentNode(name=NameNode(value='orderBy'), value=EnumValueNode(value='id')))
+        pArguments.append(ArgumentNode(name=NameNode(value='orderBy'), value=EnumValueNode(value='id')))
+        iArguments.append(ArgumentNode(name=NameNode(value='orderDirection'), value=EnumValueNode(value='asc')))
+        pArguments.append(ArgumentNode(name=NameNode(value='orderDirection'), value=EnumValueNode(value='asc')))
+        iArguments.append(ArgumentNode(name=NameNode(value='first'), value=IntValueNode(value=ITEMS_PER_PAGE)))
+        pArguments.append(ArgumentNode(name=NameNode(value='first'), value=IntValueNode(value=ITEMS_PER_PAGE)))
+
+        selections = node.selection_set.selections.copy()
+        selections.append(FieldNode(name=NameNode(value='id')))
+        if(hasattr(self, 'orderBy')):
+            selections.append(FieldNode(name=NameNode(value=self.orderBy)))
+        selectionSet = SelectionSetNode(selections=selections)
+        
+        iNode = FieldNode(directives=node.directives, alias=node.alias, name=node.name, arguments=iArguments, selection_set=selectionSet)
+        pNode = FieldNode(directives=node.directives, alias=node.alias, name=node.name, arguments=pArguments, selection_set=selectionSet)
+
+        # print(print_ast(iNode))
+        # print(print_ast(pNode))
+        self.initialQuery = print_ast(iNode)
+        self.paginationQuery = print_ast(pNode)
+
+
     def __str__(self):
-        keys = ['name', 'orderBy', 'orderDirection', 'first', 'rangeLowerVar', 'rangeUpperVar', 'hasPages', 'initialQuery']
+        keys = ['name', 'orderBy', 'orderDirection', 'bypassPagination', 'initialQuery']
         msg = ''
         for k in keys:
             if(hasattr(self, k)):
@@ -112,62 +93,57 @@ def parse_thegraph_query(queryTemplate):
         entities.append(entity)
     return entities
 
-
-def load_subgraph_per_entity_per_page(entityName, url, query, queryVarRangeLower, queryVarRangeUpper, rangeLowerValue, rangeUpperValue):
-    query = query.replace(queryVarRangeLower, str(rangeLowerValue))
-    query = query.replace(queryVarRangeUpper, str(rangeUpperValue))
+@st.cache
+def load_subgraph_per_entity_per_page(entityName, url, query, since):
+    if not since == None:
+        query = query.replace('__LASTID__', since)
     
     response = requests.post(url, json={'query': query})
     text = json.loads(response.text)
     return text["data"][entityName]
 
-def load_subgraph_per_entity_all_pages_asc(url, entity:TheGraphEntity, rangeLowerValue, rangeUpperValue):
-    t = rangeLowerValue
+def load_subgraph_per_entity_all_pages(url, entity:TheGraphEntity):
     arr = []
     i = 0
-    while(t < rangeUpperValue):
-        query = entity.initialQuery if len(arr) == 0 else entity.paginationQuery
-        parr = load_subgraph_per_entity_per_page(entity.name, url, '{'+query+'}', entity.rangeLowerVar, entity.rangeUpperVar, t, rangeUpperValue)
-        l = len(parr)
+    while True:
+        l = len(arr)
+        query = entity.initialQuery if l == 0 else entity.paginationQuery
+        since = None if l == 0 else arr[l-1]['id']
+        parr = load_subgraph_per_entity_per_page(entity.name, url, '{'+query+'}', since)
         arr.extend(parr)
-        print('!!pagination asc '+entity.name+' '+str(i)+' '+str(t)+' '+str(rangeUpperValue)+' '+str(len(arr)))
+        l = len(parr)
+        print('!!pagination asc '+entity.name+' '+str(i)+' '+str(since)+' '+str(len(arr)))
         i += 1
         if(l == 0 or l < ITEMS_PER_PAGE or len(arr) >= entity.limit):
             break
-        else:
-            t = parr[l-1][entity.orderBy]
     return arr
 
-
-def load_subgraph_per_entity_all_pages_desc(url, entity:TheGraphEntity, rangeLowerValue, rangeUpperValue):
-    t = rangeUpperValue
-    arr = []
-    i = 0
-    while(t >= rangeLowerValue):
-        query = entity.initialQuery if len(arr) == 0 else entity.paginationQuery
-        parr = load_subgraph_per_entity_per_page(entity.name, url, '{'+query+'}', entity.rangeLowerVar, entity.rangeUpperVar, rangeLowerValue, t)
-        l = len(parr)
-        print('!!pagination asc '+entity.name+' '+str(i)+' '+str(rangeLowerValue)+' '+str(t)+' '+str(len(arr)))
-        arr.extend(parr)
-        i += 1
-        if(l == 0 or l < ITEMS_PER_PAGE or len(arr) >= entity.limit):
-            break
-        else:
-            t = parr[l-1][entity.orderBy]
-    return arr
 
 def load_subgraph(url, queryTemplate):
     entities = parse_thegraph_query(queryTemplate)
     # print(entities)
     results = {}
     for e in entities:
-        if(e.hasPages):
-            if(e.orderDirection == 'asc'):
-                results[e.name] = load_subgraph_per_entity_all_pages_asc(url, e, int(e.rangeLowerVar), int(e.rangeUpperVar))
-            elif(e.orderDirection == 'desc'):
-                results[e.name] = load_subgraph_per_entity_all_pages_desc(url, e, int(e.rangeLowerVar), int(e.rangeUpperVar))
+        if(e.bypassPagination):
+            arr = load_subgraph_per_entity_all_pages(url, e)
+            if hasattr(e, 'orderBy'):
+                try:
+                    reverse = False if hasattr(e, 'orderDirection') and e.orderDirection == 'desc' else True
+                    try:
+                        arr.sort(key=lambda x: float(x[e.orderBy]), reverse=reverse)
+                    except TypeError:
+                        try:
+                            arr.sort(key=lambda x: x[e.orderBy], reverse=reverse)
+                        except TypeError:
+                            a = 1
+                        a = 1
+
+                except KeyError:
+                    a = 1
+
+            results[e.name] = arr
         else:
-            results[e.name] = load_subgraph_per_entity_per_page(e.name, url, '{'+e.initialQuery+'}', '--------', '--------', 1, 2)
+            results[e.name] = load_subgraph_per_entity_per_page(e.name, url, '{'+e.initialQuery+'}', None)
     return results
 
 
