@@ -1,9 +1,12 @@
-from logging import exception
 import streamlit as st
 import pandas as pd
 import numpy as np
 import requests
 import json
+
+import concurrent.futures
+
+from streamlit.report_thread import add_report_ctx
 
 from graphql import parse, print_ast, ArgumentNode, NameNode, IntValueNode, FieldNode, SelectionSetNode, ObjectValueNode, StringValueNode, ObjectFieldNode, EnumValueNode
 
@@ -118,34 +121,62 @@ def load_subgraph_per_entity_all_pages(url, entity:TheGraphEntity):
             break
     return arr
 
+def load_subgraph_per_entity(url, e:TheGraphEntity):
+    if(e.bypassPagination):
+        arr = load_subgraph_per_entity_all_pages(url, e)
+        if hasattr(e, 'orderBy'):
+            try:
+                reverse = False if hasattr(e, 'orderDirection') and e.orderDirection == 'desc' else True
+                try:
+                    arr.sort(key=lambda x: float(x[e.orderBy]), reverse=reverse)
+                except TypeError:
+                    try:
+                        arr.sort(key=lambda x: x[e.orderBy], reverse=reverse)
+                    except TypeError:
+                        a = 1
+                    a = 1
+
+            except KeyError:
+                a = 1
+        return {
+            'entity': e.name,
+            'data': arr
+        }
+    else:
+        return {
+            'entity': e.name,
+            'data': load_subgraph_per_entity_per_page(e.name, url, '{'+e.initialQuery+'}', None)
+        }
+
+
+def load_subgraph_wo_concurrency(url, queryTemplate):
+    entities = parse_thegraph_query(queryTemplate)
+    # print(entities)
+    results = {}
+    for e in entities:
+        data = load_subgraph_per_entity(url, e)
+        results[data['entity']] = data['data']
+    return results
 
 def load_subgraph(url, queryTemplate):
     entities = parse_thegraph_query(queryTemplate)
     # print(entities)
     results = {}
-    for e in entities:
-        if(e.bypassPagination):
-            arr = load_subgraph_per_entity_all_pages(url, e)
-            if hasattr(e, 'orderBy'):
-                try:
-                    reverse = False if hasattr(e, 'orderDirection') and e.orderDirection == 'desc' else True
-                    try:
-                        arr.sort(key=lambda x: float(x[e.orderBy]), reverse=reverse)
-                    except TypeError:
-                        try:
-                            arr.sort(key=lambda x: x[e.orderBy], reverse=reverse)
-                        except TypeError:
-                            a = 1
-                        a = 1
 
-                except KeyError:
-                    a = 1
+    # https://stackoverflow.com/questions/2632520/what-is-the-fastest-way-to-send-100-000-http-requests-in-python
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(entities)) as executor:
+        future_to_url = {executor.submit(load_subgraph_per_entity, url, e) for e in entities}
+        for thread in executor._threads:
+            add_report_ctx(thread)
 
-            results[e.name] = arr
-        else:
-            results[e.name] = load_subgraph_per_entity_per_page(e.name, url, '{'+e.initialQuery+'}', None)
+        for future in concurrent.futures.as_completed(future_to_url):
+            try:
+                data = future.result()
+                results[data['entity']] = data['data']
+            except Exception as exc:
+                print('exception!! ')
+                print(exc)
     return results
-
 
 
 # url_aave_subgraph = 'https://api.thegraph.com/subgraphs/name/aave/protocol'
