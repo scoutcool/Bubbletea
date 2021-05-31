@@ -11,6 +11,12 @@ from streamlit.report_thread import add_report_ctx
 from graphql import parse, print_ast, ArgumentNode, NameNode, IntValueNode, FieldNode, SelectionSetNode, ObjectValueNode, StringValueNode, ObjectFieldNode, EnumValueNode
 
 ITEMS_PER_PAGE = 2
+class SubgraphDef:
+    url: str
+    query: str
+    def __init__(self, url:str, query:str) -> None:
+        self.url = url
+        self.query = query
 
 class TheGraphEntity:
     def __init__(self, node) -> None:
@@ -173,6 +179,28 @@ def load_subgraph(url, queryTemplate):
             try:
                 data = future.result()
                 results[data['entity']] = data['data']
+            except Exception as exc:
+                print('exception!! ')
+                print(exc)
+    return {
+        'url': url,
+        'data': results
+    }
+
+def load_subgraphs(params:list[SubgraphDef]):
+    results = {}
+    print(len(params))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(params)) as executor:
+        future_to_url = {executor.submit(load_subgraph, param.url, param.query) for param in params}
+        for thread in executor._threads:
+            add_report_ctx(thread)
+
+        for future in concurrent.futures.as_completed(future_to_url):
+            try:
+                data = future.result()
+                print('!!result')
+                print(data['url'])
+                results[data['url']] = data['data']
             except Exception as exc:
                 print('exception!! ')
                 print(exc)
