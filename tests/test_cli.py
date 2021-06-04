@@ -7,7 +7,10 @@ import earlgrey.cli as cli
 
 def test():
   runner = CliRunner()
-  result = runner.invoke(cli, args=['aave.py'], catch_exceptions=True, prog_name="earlgrey_test")
+  result = runner.invoke(cli.run, args=['aave.py'], catch_exceptions=True, prog_name="earlgrey_test")
   assert result.exit_code == 0
 
-test()
+# test()
+if __name__ == "__main__":
+    test()
+    print("Everything passed")
