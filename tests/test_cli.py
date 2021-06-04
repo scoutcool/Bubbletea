@@ -1,0 +1,13 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from click.testing import CliRunner
+import earlgrey.cli as cli
+
+def test():
+  runner = CliRunner()
+  result = runner.invoke(cli, args=['aave.py'], catch_exceptions=True, prog_name="earlgrey_test")
+  assert result.exit_code == 0
+
+test()
