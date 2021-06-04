@@ -2,9 +2,8 @@ import click
 import os
 
 
-@click.command()
-@click.argument("target", required=True)
-def main(target):
+@click.group()
+def main():
     pass
     # click.echo(f'RUNNING STREAM LIT {target}')
     # os.system(f'streamlit run {target}')

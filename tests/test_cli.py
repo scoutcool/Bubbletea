@@ -1,9 +1,14 @@
-import os
-import sys
+import os, sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# import sys
+# from pathlib import Path
+# sys.path.insert(0, Path(__file__).parent / "lib")
+# print(sys.path)
+
+
 from click.testing import CliRunner
-import earlgrey.cli as cli
+import lib.earlgrey.cli as cli
 
 def test():
   runner = CliRunner()
