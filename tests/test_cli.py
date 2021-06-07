@@ -13,6 +13,7 @@ import lib.earlgrey.cli as cli
 def test():
   runner = CliRunner()
   result = runner.invoke(cli.run, args=['aave.py'], catch_exceptions=True, prog_name="earlgrey_test")
+  print(result.exit_code)
   assert result.exit_code == 0
 
 # test()

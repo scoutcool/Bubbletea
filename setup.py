@@ -1,11 +1,10 @@
 import setuptools
-
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+VERSION = "0.0.5"
+long_description = 'HELLO WORLD '+VERSION
 
 setuptools.setup(
     name="example-pkg-earlgrey",
-    version="0.0.1",
+    version=VERSION,
     author="Supermax Tech.",
     author_email="hello@scout.cool",
     description="A small example package",
@@ -14,5 +13,11 @@ setuptools.setup(
     url="https://github.com/scout-cool/streamlit_flow",
     package_dir={"": "lib"},
     packages=setuptools.find_packages(where="lib"),
+    install_requires=[
+        'streamlit','graphql-core'
+    ],
+    entry_points={
+        'console_scripts': ['earlgrey = earlgrey.cli:run']
+    },
     python_requires=">=3.6",
 )

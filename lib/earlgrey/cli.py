@@ -13,7 +13,8 @@ def main():
 def run(target):
     click.echo(f'RUNNING STREAM LIT {target}')
     os.system(f'streamlit run {target}')
+    # cli._main_run()
 
 
 if __name__ == '__main__':
-    main()
+    run()

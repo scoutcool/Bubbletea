@@ -1,2 +1,8 @@
 __pycache__/
 .DS_Store
+build/
+dist/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
