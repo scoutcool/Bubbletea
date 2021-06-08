@@ -11,7 +11,7 @@ def main():
 @click.command()
 @click.argument("target", required=True)
 def run(target):
-    click.echo(f'RUNNING STREAM LIT {target}')
+    # click.echo(f'RUNNING STREAMLIT {target}')
     os.system(f'streamlit run {target}')
     # cli._main_run()
 
