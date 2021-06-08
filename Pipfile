@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 streamlit = "~=0.82.0"
 graphql-core = "~=3.1.5"
+click = "*"
 
 [dev-packages]
 
