@@ -10,7 +10,7 @@ from streamlit.report_thread import add_report_ctx
 
 from graphql import parse, print_ast, ArgumentNode, NameNode, IntValueNode, FieldNode, SelectionSetNode, ObjectValueNode, StringValueNode, ObjectFieldNode, EnumValueNode
 
-ITEMS_PER_PAGE = 2
+ITEMS_PER_PAGE = 1000
 class SubgraphDef:
     url: str
     query: str
@@ -102,7 +102,7 @@ def parse_thegraph_query(queryTemplate):
         entities.append(entity)
     return entities
 
-@st.cache
+@st.cache(show_spinner=False)
 def load_subgraph_per_entity_per_page(entityName, url, query, since):
     if not since == None:
         query = query.replace('__LASTID__', since)

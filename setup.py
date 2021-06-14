@@ -1,7 +1,7 @@
 import setuptools
 from os import path
 
-VERSION = "0.0.6"
+VERSION = "0.0.7"
 NAME="Earlgrey"
 DESCRIPTION = "hello "+NAME
 LONG_DESCRIPTION = NAME 
