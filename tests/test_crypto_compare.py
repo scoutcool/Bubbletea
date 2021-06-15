@@ -2,7 +2,6 @@ import os, sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-from click.testing import CliRunner
 import lib.earlgrey.crypto_compare as cp
 
 def test():
