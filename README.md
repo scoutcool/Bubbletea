@@ -1,5 +1,6 @@
 ### Creating virtual environments
 `python3 -m venv <DIR>`
+
 `source <DIR>/bin/activate`
 
 ### Install Earlgrey
