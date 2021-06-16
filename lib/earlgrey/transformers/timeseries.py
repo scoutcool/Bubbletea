@@ -60,7 +60,7 @@ def aggregate_timeseries(data:json, timeColumn:str, interval:TimeseriesInterval,
         r = df[[c.name]].resample(interval)
         f = getattr(r, c.aggregateMethod)
 
-        print(f"\n\n??? {c.name} {c.aggregateMethod} {c.naFillValue}")
+        # print(f"\n\n??? {c.name} {c.aggregateMethod} {c.naFillValue}")
         _df = f()
         _df.index.names = [timeColumn]
         if c.naFillMethod != None:
@@ -71,18 +71,13 @@ def aggregate_timeseries(data:json, timeColumn:str, interval:TimeseriesInterval,
             _df = _df.reindex(idx, fill_value=c.naFillValue)
         else:
             _df=_df.reindex(idx)
-            # _df = _df.reindex(idx, fill_value=c.naFillValue)
-        # _df.index.names = [timeColumn]
-        # print(_df)
         _df.index.names = [timeColumn]
-        print(f'\n\nafter redindex\n{_df}')
+        # print(f'\n\nafter redindex\n{_df}')
         if i == 0:
             result_df = _df
         else:
             result_df = pd.merge(result_df, _df, on=timeColumn, how="outer")
         i += 1
-    
-    # result_df = result_df.reindex(idx)
     return result_df
 
 

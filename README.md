@@ -32,8 +32,8 @@ cp.load_historical_data('ETH', 'USD', 1619827200, 1619913600, <your_api_key>, <y
 import lib.earlgrey.transformers.timeseries as ts
 data = [
     {"time":1609459201, "amount":1, "rate":1.1},    #2021/01/01
-    {"time":1609459202, "amount":2, "rate":1.2},    #2020/01/02
-    {"time":1609632004, "amount":4, "rate":1.4}]    #2020/01/04
+    {"time":1609459202, "amount":2, "rate":1.2},    #2020/01/01
+    {"time":1609632004, "amount":4, "rate":1.4}]    #2020/01/03
 df = ts.aggregate_timeseries(
     data = data,
     timeColumn='time',
