@@ -189,7 +189,7 @@ def load_subgraph(url, queryTemplate):
 
 def load_subgraphs(params:list[SubgraphDef]):
     results = {}
-    print(len(params))
+    # print(len(params))
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(params)) as executor:
         future_to_url = {executor.submit(load_subgraph, param.url, param.query) for param in params}
         for thread in executor._threads:
