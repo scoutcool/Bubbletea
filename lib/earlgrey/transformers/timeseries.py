@@ -1,4 +1,5 @@
 
+from datetime import time, timedelta
 import json
 import math
 from typing import Dict, Union
@@ -9,11 +10,10 @@ from pandas.core.frame import DataFrame
 from pandas.core.indexes.datetimes import date_range
 
 class TimeseriesInterval(str, Enum):
-    HOURLY = 'h',
-    DAILY = 'd',
-    WEEKLY = 'w',
-    MONTHLY = 'm'
-    QUARTER = 'Q'
+    HOURLY = 'H',
+    DAILY = 'D',
+    WEEKLY = 'W-SUN',
+    MONTHLY = 'MS'
 
 class AggregateMethod(str, Enum):
     MEAN = 'mean',
@@ -57,21 +57,38 @@ def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str,
         df = data
     else:
         df = pd.json_normalize(data)
-
     tmin = df[time_column].min()
     tmax = df[time_column].max()
+    
     if 'start_timestamp' in kwargs:
         tmin = kwargs.get('start_timestamp',tmin)
     if 'end_timestamp' in kwargs:
         tmax = kwargs.get('end_timestamp',tmax)
-
-    tmin = pd.to_datetime(math.floor(tmin / 3600) * 3600, unit='s')
-    tmax = pd.to_datetime(math.ceil(tmax / 3600) * 3600, unit='s')
+    
+    if interval == TimeseriesInterval.HOURLY:
+        tmin = pd.to_datetime(math.floor(tmin / 3600) * 3600, unit='s')
+        tmax = pd.to_datetime(math.ceil(tmax / 3600) * 3600, unit='s')
+    else:
+        tmin = pd.to_datetime(math.floor(tmin / 86400) * 86400, unit='s')
+        tmax = pd.to_datetime(math.ceil(tmax / 86400) * 86400, unit='s')
+        print(f'time frame {tmin} - {tmax}')
+        if interval == TimeseriesInterval.WEEKLY:
+            if tmin.weekday() != 0:
+                tmin -= timedelta(days=(tmin.weekday()))
+            if tmax.weekday() != 0:
+                tmax += timedelta(days=(7-tmax.weekday()))
+            # tmax = tmax + 0 if tmax.weekday() == 0 else timedelta(days=(7-tmax.weekday()))
+        elif interval == TimeseriesInterval.MONTHLY:
+            tmin = tmin.replace(day=1)
+            tmax = tmax.replace(day=1,month=tmax.month % 12 + 1, year=tmax.year + (tmax.month // 12))
+            # tmax = tmax.replace(day=30)
+        
+    print(f'time frame {tmin} - {tmax}')
 
     df[time_column] = df[time_column].apply(lambda x: pd.to_datetime(x, unit='s'))
     
-    idx=pd.date_range(start=tmin, end=tmax, freq=interval)
-    # print(idx)
+    idx = pd.date_range(start=tmin, end=tmax, freq=interval)
+    print(idx)
     
     df = df.set_index(time_column)
     
@@ -87,6 +104,8 @@ def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str,
 
         _df = f()
         _df.index.names = [time_column]
+        print(f'\n\nbefore redindex\n{_df}')
+        
         if c.na_fill_method != None:
              _df = _df.fillna(method=c.na_fill_method)
              _df = _df.reindex(idx, method=c.na_fill_method)
@@ -96,7 +115,15 @@ def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str,
         else:
             _df=_df.reindex(idx)
         _df.index.names = [time_column]
-        # print(f'\n\nafter redindex\n{_df}')
+
+        if interval == TimeseriesInterval.WEEKLY:
+            _df = _df.reset_index()
+            print(_df[time_column])
+            _df[time_column] = _df[time_column].apply(lambda x: x if x.weekday() == 0 else x - timedelta(days=(6-x.weekday())))
+            print(_df[time_column])
+            _df = _df.set_index(time_column)
+
+        print(f'\n\nafter redindex\n{_df}')
         if i == 0:
             result_df = _df
         else:

@@ -34,7 +34,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="lib"),
     # install_requirements=requirements,
     install_requires=[
-        'streamlit=0.82.0','graphql-core=3.1.5'
+        'streamlit','graphql-core'
     ],
     entry_points={
         'console_scripts': ['earlgrey = earlgrey.cli:run']
