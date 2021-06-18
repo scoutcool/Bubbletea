@@ -71,24 +71,22 @@ def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str,
     else:
         tmin = pd.to_datetime(math.floor(tmin / 86400) * 86400, unit='s')
         tmax = pd.to_datetime(math.ceil(tmax / 86400) * 86400, unit='s')
-        print(f'time frame {tmin} - {tmax}')
+        # print(f'time frame {tmin} - {tmax}')
         if interval == TimeseriesInterval.WEEKLY:
             if tmin.weekday() != 0:
-                tmin -= timedelta(days=(tmin.weekday()))
+                tmin += timedelta(days=(6-tmin.weekday()))
             if tmax.weekday() != 0:
-                tmax += timedelta(days=(7-tmax.weekday()))
-            # tmax = tmax + 0 if tmax.weekday() == 0 else timedelta(days=(7-tmax.weekday()))
+                tmax += timedelta(days=(6-tmax.weekday()))
         elif interval == TimeseriesInterval.MONTHLY:
             tmin = tmin.replace(day=1)
             tmax = tmax.replace(day=1,month=tmax.month % 12 + 1, year=tmax.year + (tmax.month // 12))
-            # tmax = tmax.replace(day=30)
         
-    print(f'time frame {tmin} - {tmax}')
+    # print(f'time frame {tmin} - {tmax}')
 
     df[time_column] = df[time_column].apply(lambda x: pd.to_datetime(x, unit='s'))
     
     idx = pd.date_range(start=tmin, end=tmax, freq=interval)
-    print(idx)
+    # print(idx)
     
     df = df.set_index(time_column)
     
@@ -104,7 +102,7 @@ def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str,
 
         _df = f()
         _df.index.names = [time_column]
-        print(f'\n\nbefore redindex\n{_df}')
+        # print(f'\n\naggregated\n{_df}')
         
         if c.na_fill_method != None:
              _df = _df.fillna(method=c.na_fill_method)
@@ -118,12 +116,11 @@ def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str,
 
         if interval == TimeseriesInterval.WEEKLY:
             _df = _df.reset_index()
-            print(_df[time_column])
-            _df[time_column] = _df[time_column].apply(lambda x: x if x.weekday() == 0 else x - timedelta(days=(6-x.weekday())))
-            print(_df[time_column])
+            _df[time_column] = _df[time_column].apply(lambda x: x - timedelta(days=6))
+            # print(f'\n\nshift 6 days ahead:\n{_df}')
             _df = _df.set_index(time_column)
 
-        print(f'\n\nafter redindex\n{_df}')
+        # print(f'\n\nafter redindex\n{_df}')
         if i == 0:
             result_df = _df
         else:

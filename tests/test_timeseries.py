@@ -30,47 +30,27 @@ def is_json(candidate):
 #     {"time":1623686588, "amount":4, "rate":1.4}     #6/14
 #     ]
 data = [
-    # {"time":1607954665, "amount":1, "rate":1.1},    #12/14/2020
+    {"time":1607954665, "amount":1, "rate":1.1},    #12/14/2020
     {"time":1608229389, "amount":1, "rate":1.1},    #12/17/2020
-    {"time":1610907789+86400, "amount":2, "rate":1.2},    #01/17/2021
+    {"time":1610907789, "amount":2, "rate":1.2},    #01/17/2021
     # {"time":1613586189, "amount":3, "rate":1.3},    #02/17/2021
     # {"time":1623686588, "amount":4, "rate":1.4}     #06/17/2021
     ]
 data = pd.json_normalize(data)
 
-# dt = pd.date_range("2021-06-06 04:00:00'", "2021-06-13 04:00:00", freq='W-SUN')
-# print(dt)
-
-
-# df = ts.aggregate_timeseries(
-#     data=data, 
-#     time_column="time", 
-#     interval=ts.TimeseriesInterval.WEEKLY, 
-#     columns=[
-#         ts.ColumnConfig(name="amount", aggregate_method=ts.AggregateMethod.SUM, na_fill_value=0.0),
-#         ts.ColumnConfig(name="volume", aggregate_method=ts.AggregateMethod.SUM, na_fill_value=0.0),
-#         ts.ColumnConfig(name="rate", aggregate_method=ts.AggregateMethod.LAST, na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL),
-#     ],
-#     # start_timestamp = math.floor(1623470400/86400)*86400,
-#     # end_timestamp = math.ceil(1623556800/86400)*86400
-# )
 df = ts.aggregate_timeseries(
     data = data,
     time_column='time',
     interval=ts.TimeseriesInterval.WEEKLY,
     columns=[
-        # ts.ColumnConfig(name='rate', 
-        #         aggregate_method=ts.AggregateMethod.LAST, 
-        #         na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL,
-        #         type=ts.ColumnType.float),
         ts.ColumnConfig(name='amount', 
                 aggregate_method=ts.AggregateMethod.SUM, 
                 na_fill_value=0.0,
                 type=ts.ColumnType.float),
-        # ts.ColumnConfig(name='volume', 
-        #         aggregate_method=ts.AggregateMethod.SUM, 
-        #         na_fill_value=0.0,
-        #         type=ts.ColumnType.float)
+        ts.ColumnConfig(name='rate', 
+                aggregate_method=ts.AggregateMethod.LAST, 
+                na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL,
+                type=ts.ColumnType.float)
     ],
     # start_timestamp=1623456000,
     # end_timestamp= 1623628800
