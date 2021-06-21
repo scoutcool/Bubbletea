@@ -6,3 +6,9 @@ eggs/
 .eggs/
 *.egg-info/
 *.egg
+bin/
+etc/
+share
+lib/python3.9
+pyvenv.cfg
+share/

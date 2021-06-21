@@ -1,7 +1,7 @@
 import setuptools
 from os import path
 
-VERSION = "0.0.11"
+VERSION = "0.0.13"
 NAME="Earlgrey"
 DESCRIPTION = "hello "+NAME
 LONG_DESCRIPTION = "https://github.com/scout-cool/streamlit_flow"
