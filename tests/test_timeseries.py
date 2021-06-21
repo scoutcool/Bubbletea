@@ -128,3 +128,27 @@ for data_set in monthly_data_sets:
         ]
     )
     print(df)
+
+colors = [
+    "#66D2C3",
+    "#2E678E",
+    "#F9965B",
+    "#4CAAF7",
+    "#E3EF89",
+    "#8D6DCF",
+    "#849AD9",
+    "#EF6461",
+    "#009FB7",
+    "#FED766",
+    "#728FE6",
+    "#62C1D6",
+    "#CF74BA",
+    "#7AD07C",
+    "#F7AA7C",
+    "#39AD92",
+    "#74BA7F",
+    "#E56A99",
+    "#7196BE",
+    "#D08D66",
+]
+print(json.dumps(colors))

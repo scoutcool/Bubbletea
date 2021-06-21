@@ -11,34 +11,12 @@ import altair as alt
 import datetime
 import time
 
-PALETTE = [
-    "#66D2C3",
-    "#2E678E",
-    "#F9965B",
-    "#4CAAF7",
-    "#E3EF89",
-    "#8D6DCF",
-    "#849AD9",
-    "#EF6461",
-    "#009FB7",
-    "#FED766",
-    "#728FE6",
-    "#62C1D6",
-    "#CF74BA",
-    "#7AD07C",
-    "#F7AA7C",
-    "#39AD92",
-    "#74BA7F",
-    "#E56A99",
-    "#7196BE",
-    "#D08D66",
-]
+PALETTE = ["#66D2C3", "#2E678E", "#F9965B", "#4CAAF7", "#E3EF89", "#8D6DCF", "#849AD9", "#EF6461", "#009FB7", "#FED766", "#728FE6", "#62C1D6", "#CF74BA", "#7AD07C", "#F7AA7C", "#39AD92", "#74BA7F", "#E56A99", "#7196BE", "#D08D66"]
+TOKEN_SYMBOL_PRICING = "ETH"
+TOKEN_SYMBOL = "WETH"
+PERIODS = [ts.TimeseriesInterval.DAILY,ts.TimeseriesInterval.WEEKLY,ts.TimeseriesInterval.MONTHLY]
 
-
-@st.cache(show_spinner=False)
-def load_pricing(symbol, startTimestamp, endTimestamp):
-    return cp.load_historical_data(symbol, 'USD', startTimestamp, endTimestamp, '163b4f02ba446862200ecf7a64c3359b6d6bcf9d417aa27a0b5b29c9f9e619be', 2000)
-
+st.title(f"AAVE V2 {TOKEN_SYMBOL} Deposits")
 date_range = st.date_input(
     "Date range",
     (
@@ -50,12 +28,6 @@ date_range = st.date_input(
 
 START_TIMESTAMP = int(time.mktime(date_range[0].timetuple()))
 END_TIMESTAMP = int(time.mktime(date_range[1].timetuple()))
-# print(f'{START_TIMESTAMP} {END_TIMESTAMP}')
-TOKEN_SYMBOL_PRICING = "ETH"
-TOKEN_SYMBOL = "WETH"
-STATIC_DATE_FORMAT = "%Y/%m/%d"
-PERIODS = [ts.TimeseriesInterval.DAILY,ts.TimeseriesInterval.WEEKLY,ts.TimeseriesInterval.MONTHLY]
-
 url_aave_subgraph = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
 query_aave = """
 {
@@ -79,15 +51,12 @@ query_aave = """
     END_TIMESTAMP,
 )
 
-
-rates = []
-pricing = load_pricing(TOKEN_SYMBOL_PRICING, START_TIMESTAMP, END_TIMESTAMP)
-for p in pricing:
-    rates.append({"rate": p["close"], "time": pd.to_datetime(p['time'], unit='s')})
-df_rates = DataFrame(rates).set_index('time')
-
-if st.checkbox("Display Rates Data"):
-    st.write(rates)
+def get_rates_df(symbol, start_timestamp, end_timestamp):
+    pricing =cp.load_historical_data(symbol, 'USD', start_timestamp, end_timestamp, '163b4f02ba446862200ecf7a64c3359b6d6bcf9d417aa27a0b5b29c9f9e619be', 2000)
+    rates = []
+    for p in pricing:
+        rates.append({"rate": p["close"], "time": pd.to_datetime(p['time'], unit='s')})
+    return DataFrame(rates).set_index('time') 
 
 
 @st.cache(show_spinner=False)
@@ -105,12 +74,8 @@ def get_eth_deposits():
             )
     return _eth_deposits
 
-
-
-st.title(f"AAVE V2 {TOKEN_SYMBOL} Deposits")
-
 @st.cache(show_spinner=False)
-def process_deposits(deposits):
+def process_deposits(deposits, df_rates):
     df_hourly = ts.aggregate_timeseries(
         data=deposits, 
         time_column="time", 
@@ -242,10 +207,14 @@ def get_line_chart(
 
 
 
+with st.spinner("Loading and processing rates data"):
+    df_rates = get_rates_df(TOKEN_SYMBOL_PRICING, START_TIMESTAMP, END_TIMESTAMP)
+
 with st.spinner("Loading deposits data"):
     eth_deposits = get_eth_deposits()
-with st.spinner("Aggregating deposit data"):
-    dfs = process_deposits(eth_deposits)
+
+with st.spinner("Loading and aggregating deposit data"):
+    dfs = process_deposits(eth_deposits, df_rates)
     for p in dfs.keys():
         st.subheader(p)
         df = dfs[p]
