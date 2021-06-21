@@ -1,14 +1,8 @@
 import streamlit as st
 
-# from streamlit_metrics import metric, metric_row
 from streamlit_ace import st_ace
 
-import pandas as pd
-import numpy as np
-import altair as alt
-# import cufflinks as cf
-
-st.set_page_config(page_title='Streamlit Sandbox', page_icon=':memo:', layout='wide', initial_sidebar_state='collapsed')
+st.set_page_config(page_title='Streamlit Sandbox', page_icon=':coin:', layout='wide', initial_sidebar_state='collapsed')
 st.sidebar.title(":memo: Editor settings")
 
 THEMES = [

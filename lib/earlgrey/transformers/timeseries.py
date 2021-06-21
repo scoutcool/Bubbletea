@@ -1,14 +1,13 @@
 
 import json
 import math
+import datetime
 from typing import Dict, Union
-from numpy import datetime64
 import pandas as pd
 from enum import Enum
-from pandas._libs.tslibs import Timestamp
 from pandas.core.frame import DataFrame
 
-from pandas.core.indexes.datetimes import DatetimeIndex, date_range
+from pandas.core.indexes.datetimes import DatetimeIndex
 
 class TimeseriesInterval(str, Enum):
     HOURLY = 'H',
@@ -52,6 +51,10 @@ def is_json(candidate):
     return False
   return True
 
+def last_day_of_month(any_day):
+    next_month = any_day.replace(day=28) + datetime.timedelta(days=4)
+    return next_month - datetime.timedelta(days=next_month.day)
+
 def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str, interval:TimeseriesInterval, columns:list[ColumnConfig], **kwargs):
     df = data if (isinstance(data, DataFrame)) else (pd.json_normalize(data))
     if df.index.name == time_column:
@@ -83,16 +86,16 @@ def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str,
                 tmax += pd.offsets.Day(6-tmax.weekday())
         elif interval == TimeseriesInterval.MONTHLY:
             tmin = tmin.replace(day=1)
-            tmax = tmax.replace(day=1,month=tmax.month % 12 + 1, year=tmax.year + (tmax.month // 12))
+            tmax = last_day_of_month(tmax)
         
     # print(f'time frame {tmin} - {tmax}')
-    print(df[time_column].dtype)
+    # print(df[time_column].dtype)
     if not isinstance(df[time_column], DatetimeIndex):
         df[time_column] = df[time_column].apply(lambda x: pd.to_datetime(x, unit='s'))
 
     
     df = df.set_index(time_column)
-    print(df)
+    # print(df)
     
     result_df = None
     i = 0
