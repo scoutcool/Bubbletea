@@ -37,118 +37,96 @@ data = [
     {"time":1610907789, "amount":2, "rate":1.2},    #01/17/2021
     # {"time":1613586189, "amount":3, "rate":1.3},    #02/17/2021
     # {"time":1623686588, "amount":4, "rate":1.4}     #06/17/2021
-    ]# data = pd.json_normalize(data)
-# data['time'] = data['time'].apply(lambda x: pd.to_datetime(x, unit='s'))
-# data = data.set_index('time')
-# print(data.index)
+    ]
+data = pd.json_normalize(data)
+data['time'] = data['time'].apply(lambda x: pd.to_datetime(x, unit='s'))
+data = data.set_index('time')
+data = data[['time']].resample('4H')
+print(data)
 
-df = ts.aggregate_timeseries(
-    data = data,
-    time_column='time',
-    interval=ts.TimeseriesInterval.WEEKLY,
-    columns=[
-        # ts.ColumnConfig(name='amount', 
-        #         aggregate_method=ts.AggregateMethod.SUM, 
-        #         na_fill_value=0.0,
-        #         type=ts.ColumnType.float),
-        ts.ColumnConfig(name='rate', 
-                aggregate_method=ts.AggregateMethod.LAST, 
-                na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL,
-                type=ts.ColumnType.float)
-    ],
-    # start_timestamp=1623456000,
-    # end_timestamp= 1623628800
-)
+# df = ts.aggregate_timeseries(
+#     data = data,
+#     time_column='time',
+#     interval=ts.TimeseriesInterval.WEEKLY,
+#     columns=[
+#         # ts.ColumnConfig(name='amount', 
+#         #         aggregate_method=ts.AggregateMethod.SUM, 
+#         #         na_fill_value=0.0,
+#         #         type=ts.ColumnType.float),
+#         ts.ColumnConfig(name='rate', 
+#                 aggregate_method=ts.AggregateMethod.LAST, 
+#                 na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL,
+#                 type=ts.ColumnType.float)
+#     ],
+#     # start_timestamp=1623456000,
+#     # end_timestamp= 1623628800
+# )
 
-weekly_data_sets = [
-    {
-        "data":[
-            {"time":1607954665, "amount":1, "rate":1.1},    #12/14/2020
-            {"time":1608229389, "amount":1, "rate":1.1},    #12/17/2020
-            {"time":1610907789, "amount":2, "rate":1.2},    #01/17/2021
-        ]
-    },
-    {
-        "data":[
-            {"time":1608229389, "amount":1, "rate":1.1},    #12/17/2020
-            {"time":1610907789, "amount":2, "rate":1.2},    #01/17/2021
-        ]
-    },
-]
-print('~~~~weekly output~~~')
-for data_set in weekly_data_sets:
-    df = ts.aggregate_timeseries(
-        data = data_set["data"],
-        time_column='time',
-        interval=ts.TimeseriesInterval.WEEKLY,
-        columns=[
-            ts.ColumnConfig(name='amount', 
-                    aggregate_method=ts.AggregateMethod.SUM, 
-                    na_fill_value=0.0,
-                    type=ts.ColumnType.float),
-            ts.ColumnConfig(name='rate', 
-                    aggregate_method=ts.AggregateMethod.LAST, 
-                    na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL,
-                    type=ts.ColumnType.float)
-        ]
-    )
-    print(df)
+# weekly_data_sets = [
+#     {
+#         "data":[
+#             {"time":1607954665, "amount":1, "rate":1.1},    #12/14/2020
+#             {"time":1608229389, "amount":1, "rate":1.1},    #12/17/2020
+#             {"time":1610907789, "amount":2, "rate":1.2},    #01/17/2021
+#         ]
+#     },
+#     {
+#         "data":[
+#             {"time":1608229389, "amount":1, "rate":1.1},    #12/17/2020
+#             {"time":1610907789, "amount":2, "rate":1.2},    #01/17/2021
+#         ]
+#     },
+# ]
+# print('~~~~weekly output~~~')
+# for data_set in weekly_data_sets:
+#     df = ts.aggregate_timeseries(
+#         data = data_set["data"],
+#         time_column='time',
+#         interval=ts.TimeseriesInterval.WEEKLY,
+#         columns=[
+#             ts.ColumnConfig(name='amount', 
+#                     aggregate_method=ts.AggregateMethod.SUM, 
+#                     na_fill_value=0.0,
+#                     type=ts.ColumnType.float),
+#             ts.ColumnConfig(name='rate', 
+#                     aggregate_method=ts.AggregateMethod.LAST, 
+#                     na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL,
+#                     type=ts.ColumnType.float)
+#         ]
+#     )
+#     print(df)
 
 
-monthly_data_sets = [
-    {
-        "data":[
-            {"time":1607212800, "amount":1, "rate":1.1},    #12/06/2020
-            {"time":1609459200, "amount":1, "rate":1.1},    #01/01/2020
-            {"time":1614470400, "amount":2, "rate":1.2},    #02/28/2021
-        ]
-    },
-    {
-        "data":[
-            {"time":1608229389, "amount":1, "rate":1.1},    #12/17/2020
-            {"time":1610907789, "amount":2, "rate":1.2},    #01/17/2021
-        ]
-    },
-]
-print('~~~~monthly output~~~')
-for data_set in monthly_data_sets:
-    df = ts.aggregate_timeseries(
-        data = data_set["data"],
-        time_column='time',
-        interval=ts.TimeseriesInterval.MONTHLY,
-        columns=[
-            ts.ColumnConfig(name='amount', 
-                    aggregate_method=ts.AggregateMethod.SUM, 
-                    na_fill_value=0.0,
-                    type=ts.ColumnType.float),
-            ts.ColumnConfig(name='rate', 
-                    aggregate_method=ts.AggregateMethod.LAST, 
-                    na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL,
-                    type=ts.ColumnType.float)
-        ]
-    )
-    print(df)
-
-colors = [
-    "#66D2C3",
-    "#2E678E",
-    "#F9965B",
-    "#4CAAF7",
-    "#E3EF89",
-    "#8D6DCF",
-    "#849AD9",
-    "#EF6461",
-    "#009FB7",
-    "#FED766",
-    "#728FE6",
-    "#62C1D6",
-    "#CF74BA",
-    "#7AD07C",
-    "#F7AA7C",
-    "#39AD92",
-    "#74BA7F",
-    "#E56A99",
-    "#7196BE",
-    "#D08D66",
-]
-print(json.dumps(colors))
+# monthly_data_sets = [
+#     {
+#         "data":[
+#             {"time":1607212800, "amount":1, "rate":1.1},    #12/06/2020
+#             {"time":1609459200, "amount":1, "rate":1.1},    #01/01/2020
+#             {"time":1614470400, "amount":2, "rate":1.2},    #02/28/2021
+#         ]
+#     },
+#     {
+#         "data":[
+#             {"time":1608229389, "amount":1, "rate":1.1},    #12/17/2020
+#             {"time":1610907789, "amount":2, "rate":1.2},    #01/17/2021
+#         ]
+#     },
+# ]
+# print('~~~~monthly output~~~')
+# for data_set in monthly_data_sets:
+#     df = ts.aggregate_timeseries(
+#         data = data_set["data"],
+#         time_column='time',
+#         interval=ts.TimeseriesInterval.MONTHLY,
+#         columns=[
+#             ts.ColumnConfig(name='amount', 
+#                     aggregate_method=ts.AggregateMethod.SUM, 
+#                     na_fill_value=0.0,
+#                     type=ts.ColumnType.float),
+#             ts.ColumnConfig(name='rate', 
+#                     aggregate_method=ts.AggregateMethod.LAST, 
+#                     na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL,
+#                     type=ts.ColumnType.float)
+#         ]
+#     )
+#     print(df)
