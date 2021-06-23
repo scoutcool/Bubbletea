@@ -10,27 +10,31 @@ import time
 from flash_card import flash_card
 from charts.line import plot as plot_line
 
-TOKEN_SYMBOL_PRICING = "ETH"
-TOKEN_SYMBOL = "WETH"
-PERIODS = [ts.TimeseriesInterval.HOURLY,ts.TimeseriesInterval.DAILY,ts.TimeseriesInterval.WEEKLY,ts.TimeseriesInterval.MONTHLY]
+TOKENS = ['AAVE', 'ETH', 'USDC', 'WBTC']
+token_symbol = TOKENS[0]
+token_symbol_cp = TOKENS[0]
 
-st.title(f"AAVE V2 {TOKEN_SYMBOL} Deposits")
-date_range = st.date_input(
-    "Date range",
-    (
-        datetime.date.today() - datetime.timedelta(days=7),
-        datetime.date.today() - datetime.timedelta(days=3),
-    ),
-)
-print(f'DATES: {len(date_range)}')
+INTERVALS = {ts.TimeseriesInterval.HOURLY: 'Hourly', ts.TimeseriesInterval.DAILY: 'Daily', ts.TimeseriesInterval.WEEKLY:'Monthly', ts.TimeseriesInterval.WEEKLY:'Monthly'}
+def format_func(option):
+    return INTERVALS[option]
+
+st.title(f"AAVE V2 {token_symbol} Deposits")
+token_symbol_cp = st.selectbox('Select a token', TOKENS)
+if token_symbol_cp == 'ETH':
+    token_symbol = 'WETH'
+
+date_range = st.date_input("Date range",(datetime.date.today() - datetime.timedelta(days=7), datetime.date.today() - datetime.timedelta(days=3)))
+    
+interval = st.selectbox('Set aggregation frequency', options=list(INTERVALS.keys()), format_func=lambda x: INTERVALS[x], index=1)
+
+
 if not len(date_range) == 2:
-    print('DATE IS NOT SELECTED')
-    st.markdown('*Please complete date selection.*')
+    st.warning('*Please select a date range.*')
     st.stop()
 
-
-START_TIMESTAMP = int(time.mktime(date_range[0].timetuple()))
-END_TIMESTAMP = int(time.mktime(date_range[1].timetuple()))
+print(date_range[0].timestamp())
+start_timestamp = int(time.mktime(date_range[0].timetuple()))
+end_timestamp = int(time.mktime(date_range[1].timetuple()))
 url_aave_subgraph = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
 query_aave = """
 {
@@ -50,8 +54,8 @@ query_aave = """
     }
 }
 """ % (
-    START_TIMESTAMP,
-    END_TIMESTAMP,
+    start_timestamp,
+    end_timestamp,
 )
 
 def get_rates_df(symbol, start_timestamp, end_timestamp):
@@ -68,7 +72,7 @@ def get_eth_deposits():
     deposits = data["data"]["deposits"]
     _eth_deposits = []
     for d in deposits:
-        if d["reserve"]["symbol"] == TOKEN_SYMBOL:
+        if d["reserve"]["symbol"] == token_symbol:
             _eth_deposits.append(
                 {
                     "amount": float(d["amount"]) / math.pow(10, int(d["reserve"]["decimals"])),
@@ -91,25 +95,25 @@ def process_deposits(deposits, df_rates):
     )
     df_hourly["volume"] = df_hourly["amount"] * df_hourly["rate"]
     result = {}
-    for p in PERIODS:
-        df = ts.aggregate_timeseries(
-            data=df_hourly, 
-            time_column="time", 
-            interval=p,
-            columns=[
-                ts.ColumnConfig(name="amount", aggregate_method=ts.AggregateMethod.SUM, na_fill_value=0.0),
-                ts.ColumnConfig(name="volume", aggregate_method=ts.AggregateMethod.SUM, na_fill_value=0.0),
-                ts.ColumnConfig(name="rate", aggregate_method=ts.AggregateMethod.LAST, na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL),
-            ],
-            start_timestamp=START_TIMESTAMP,
-            end_timestamp=END_TIMESTAMP
-            
-        )
-        result[p] = df
+    # for p in PERIODS:
+    df = ts.aggregate_timeseries(
+        data=df_hourly, 
+        time_column="time", 
+        interval=interval,
+        columns=[
+            ts.ColumnConfig(name="amount", aggregate_method=ts.AggregateMethod.SUM, na_fill_value=0.0),
+            ts.ColumnConfig(name="volume", aggregate_method=ts.AggregateMethod.SUM, na_fill_value=0.0),
+            ts.ColumnConfig(name="rate", aggregate_method=ts.AggregateMethod.LAST, na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL),
+        ],
+        start_timestamp=start_timestamp,
+        end_timestamp=end_timestamp
+        
+    )
+    result[interval] = df
     return result
 
 with st.spinner("Loading and processing rates data"):
-    df_rates = get_rates_df(TOKEN_SYMBOL_PRICING, START_TIMESTAMP, END_TIMESTAMP)
+    df_rates = get_rates_df(token_symbol_cp, start_timestamp, end_timestamp)
 
 with st.spinner("Loading deposits data"):
     eth_deposits = get_eth_deposits()
