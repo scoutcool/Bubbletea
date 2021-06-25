@@ -1,9 +1,9 @@
 Earlgrey
 --
 A python library which enables developers to quickly build any data applications entirely on the emerging Web3 infrastructure. It is an ongoing project. At this stage, we aim to solve three problems:
-- An improved way to query data from decentralized query networks such as The Graph.
+- An improved way to query data from decentralized query networks such as The Graph
 - Handy functions for common data transformations
-- A set of out-of-box charting components to make it easy to visualize any data.
+- A set of out-of-box charting components to make it easy to visualize any data
 
 
 ### load_subgraph (url, query)
@@ -17,6 +17,6 @@ Querying multiple subgraphs on The Graph network concurrently.
 ### aggregate_timeseries
 Building time based charts is a very common use case. This function 
 
-### draw_line
+### plot_line (data, xs, ys)
+Draw a line chart.
 
-In order not to reinvent the wheels, this library is inspired by a few great projects: Pandas, Streamlit
