@@ -44,19 +44,15 @@ class ColumnConfig:
         self.type = type
         pass
 
-def is_json(candidate):
-  try:
-    json.loads(candidate)
-  except ValueError as e:
-    return False
-  return True
+def to_df(data:Union[Dict,list[Dict],DataFrame]):
+  return data if (isinstance(data, DataFrame)) else (pd.json_normalize(data))
 
 def last_day_of_month(any_day):
     next_month = any_day.replace(day=28) + datetime.timedelta(days=4)
     return next_month - datetime.timedelta(days=next_month.day)
 
 def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str, interval:TimeseriesInterval, columns:list[ColumnConfig], **kwargs):
-    df = data if (isinstance(data, DataFrame)) else (pd.json_normalize(data))
+    df = to_df(data)
     if df.index.name == time_column:
         df = df.reset_index()
     
@@ -136,6 +132,21 @@ def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str,
         i += 1
     return result_df
 
+def aggregate_groupby(data:Union[Dict,list[Dict],DataFrame], by_column:str, columns:list[ColumnConfig], **kwargs):
+    df = to_df(data)
+    params = dict()
+    for c in columns:
+        if c.type != None:
+            df[c.name] = df[c.name].astype(c.type, copy=False, errors='ignore')
+        params[c.name] = pd.NamedAgg(column=c.name, aggfunc=c.aggregate_method)
+
+    df = df.groupby(by_column).agg(**params)
+    for c in columns:
+        if c.na_fill_method != None:
+            df[c.name] = df[c.name].fillna(method=c.na_fill_method)
+        elif c.na_fill_value != None:
+            df[c.name] = df[c.name].fillna(c.na_fill_value)
+    return df
 
 
 

@@ -33,25 +33,29 @@ with open(f'demo/{selected_demo}', 'r') as file:
 
 print(f"!!!! code has changed\n{code_input}")
 with editor:
-    st.write('#### Code editor')
-    code = st_ace(
-        value=code_input,
-        language="python",
-        placeholder="st.header('Hello world!')",
-        theme=editor_theme,
-        keybinding=editor_key_binding,
-        font_size=14,
-        tab_size=4,
-        wrap=st.sidebar.checkbox("Wrap lines", value=False),
-        show_gutter=True,
-        show_print_margin=False,
-        auto_update=False,
-        readonly=False,
-        key="ace-editor"
-    )
-    st.write('Hit `CTRL+ENTER` to refresh')
-    st.write('*Remember to save your code separately!*')
-    print(f'????? !!!! {selected_demo}\n{code}')
+    st.markdown(f'```{code_input}')
+    # with st.echo(code_location='below'):
+        # f'```{code_input}```'
+    
+    # st.write('#### Code editor')
+    # code = st_ace(
+    #     value=code_input,
+    #     language="python",
+    #     placeholder="st.header('Hello world!')",
+    #     theme=editor_theme,
+    #     keybinding=editor_key_binding,
+    #     font_size=14,
+    #     tab_size=4,
+    #     wrap=st.sidebar.checkbox("Wrap lines", value=False),
+    #     show_gutter=True,
+    #     show_print_margin=False,
+    #     auto_update=False,
+    #     readonly=False,
+    #     key="ace-editor"
+    # )
+    # st.write('Hit `CTRL+ENTER` to refresh')
+    # st.write('*Remember to save your code separately!*')
+    # print(f'????? !!!! {selected_demo}\n{code}')
 
 with display:
-    exec(code)
+    exec(code_input)
