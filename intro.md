@@ -16,8 +16,11 @@ An improved way to query data from a subgraph on The Graph network
 ### load_subgraphs (subgraphs)
 Querying multiple subgraphs on The Graph network concurrently.
 
-### aggregate_timeseries (data, time_column, interval, columns)
-Aggregating time series data
+### aggregate_groupby(data)
+Aggregating data into different groups
+
+### aggregate_timeseries(data, time_column, interval, columns)
+Aggregating time series data into different groups.
 
 ### plot_line (data, xs, ys)
 Draw a line chart.
