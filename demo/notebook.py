@@ -1,6 +1,5 @@
 import streamlit as st
 
-from streamlit_ace import st_ace
 import os
 
 st.set_page_config(page_title='Streamlit Sandbox', page_icon=':coin:', layout='wide', initial_sidebar_state='collapsed')
