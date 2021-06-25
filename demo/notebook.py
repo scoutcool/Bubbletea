@@ -20,18 +20,17 @@ with st.sidebar:
     # files.remove('aave.py')
     selected_demo = st.selectbox('🌟 Pick one', sorted(files))
 
-    st.markdown("""
-    ---
-    """)
-    editor_theme = st.sidebar.selectbox("Editor Theme", options=['solarized_dark','solarized_light'], index=1)
-    editor_key_binding = st.sidebar.selectbox("Key binding", options=["emacs", "sublime", "vim", "vscode"], index=3)
-    # editor_wrap = st.sidebar.checkbox("Wrap lines", value=False)
+    # st.markdown("""
+    # ---
+    # """)
+    # editor_theme = st.sidebar.selectbox("Editor Theme", options=['solarized_dark','solarized_light'], index=1)
+    # editor_key_binding = st.sidebar.selectbox("Key binding", options=["emacs", "sublime", "vim", "vscode"], index=3)
+    # # editor_wrap = st.sidebar.checkbox("Wrap lines", value=False)
 
 code_input = """st.header("Earlgrey Demos")"""
 with open(f'demo/{selected_demo}', 'r') as file:
     code_input = file.read()
 
-print(f"!!!! code has changed\n{code_input}")
 with editor:
     st.markdown(f'```{code_input}')
     # with st.echo(code_location='below'):
