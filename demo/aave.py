@@ -7,7 +7,7 @@ import pandas as pd
 import math
 import datetime
 import time
-from flash_card import flash_card
+# from flash_card import flash_card
 from lib.earlgrey.charts.line import plot as plot_line
 
 TOKENS = ['AAVE', 'ETH', 'USDC', 'WBTC']
