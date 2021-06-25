@@ -1,7 +1,6 @@
 A developer library which makes 
 
-#### load_subgraph
-````load_subgraphs````
-
-aggregate_timeseries
-draw_line
+#### load_subgraph (url, query)
+#### load_subgraphs
+#### aggregate_timeseries
+#### draw_line
