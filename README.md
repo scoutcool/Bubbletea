@@ -45,7 +45,7 @@ https://streamlit-flow.herokuapp.com/
 
 
 ### How to install
-[Installation and examples](https://www.google.com "Google's Homepage")
+[Installation](https://github.com/scout-cool/streamlit_flow/blob/main/install.md)
 
 
 ### Get in touch
