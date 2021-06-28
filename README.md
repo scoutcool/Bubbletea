@@ -14,7 +14,22 @@ It is an ongoing project. At this stage, we are solving below problems:
 
 
 ### Highlights
+#### load_subgraph
+An improved way to query data from a subgraph on The Graph network 
+- Removed the limitation of up to 1000 items per request 
+- When a graph query contains multiple entities, this function loads them concurrently
 
+#### load_subgraphs (subgraphs)
+Querying multiple subgraphs on The Graph network concurrently.
+
+#### aggregate_groupby(data)
+Aggregating data into different groups
+
+#### aggregate_timeseries(data, time_column, interval, columns)
+Aggregating time series data into different groups.
+
+#### plot_line (data, xs, ys)
+Draw a line chart.
 
 
 ### Live demo
