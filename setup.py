@@ -34,7 +34,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="lib"),
     # install_requirements=requirements,
     install_requires=[
-        'streamlit','graphql-core'
+        'streamlit','graphql-core','python-dotenv'
     ],
     entry_points={
         'console_scripts': ['earlgrey = earlgrey.cli:run']
