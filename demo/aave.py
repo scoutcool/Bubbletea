@@ -1,6 +1,7 @@
 import lib.earlgrey.thegraph.thegraph_loader as gl
 import lib.earlgrey.crypto_compare as cp
 import lib.earlgrey.transformers.timeseries as ts
+from lib.earlgrey.charts.line import plot as plot_line
 from pandas.core.frame import DataFrame
 import streamlit as st
 import pandas as pd
@@ -8,18 +9,13 @@ import math
 import datetime
 import time
 # from flash_card import flash_card
-from earlgrey.charts.line import plot as plot_line
 
 import os
-# 
-# if CP_API_TOKEN == None:
-#     os.environ.set
+
 from dotenv import load_dotenv
 load_dotenv()
+
 CP_API_TOKEN = os.environ.get('cp_api_token')
-print(CP_API_TOKEN) 
-
-
 TOKENS = ['AAVE', 'ETH', 'USDC', 'WBTC']
 token_symbol = TOKENS[0]
 token_symbol_cp = TOKENS[0]
