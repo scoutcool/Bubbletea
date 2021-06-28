@@ -15,6 +15,12 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+
+st.markdown(""" <style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+</style> """, unsafe_allow_html=True)
+
 CP_API_TOKEN = os.environ.get('cp_api_token')
 TOKENS = ['AAVE', 'ETH', 'USDC', 'WBTC']
 token_symbol = TOKENS[0]
