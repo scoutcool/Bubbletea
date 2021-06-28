@@ -31,7 +31,7 @@ Aggregating data into different groups
 
 #### aggregate_timeseries
 ```
-Aggregating time series data into different groups by various time intervals.
+Aggregating time series data by various time intervals.
 ```
 
 #### plot_line
