@@ -3,8 +3,11 @@ Earlgrey
 
 A python library which enables developers to quickly build any data applications on the emerging Web3 infrastructure. Whether you are a developer who builds dashboards to visualize protocol data or data scientist who studies correlations across different crypto data sources, we hope this library will be the fastest way to get what you want.
 
-### What is it
+### Benefits
+
 ### How to get started
+[Installation and examples](https://www.google.com "Google's Homepage")
+
 
 ### Creating virtual environments
 `python3 -m venv <DIR>`
