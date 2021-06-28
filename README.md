@@ -14,10 +14,11 @@ Whether you are a developer who builds dashboards to visualize protocol data or 
 
 ### Highlights
 #### load_subgraph
+```
 An improved way to query data from a subgraph on The Graph network 
 - Removed the limitation of up to 1000 items per request 
 - When a graph query contains multiple entities, this function loads them concurrently
-
+```
 #### load_subgraphs
 Querying multiple subgraphs on The Graph network concurrently.
 
