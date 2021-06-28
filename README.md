@@ -20,16 +20,24 @@ An improved way to query data from a subgraph on The Graph network
 - When a graph query contains multiple entities, this function loads them concurrently
 ```
 #### load_subgraphs
+```
 Querying multiple subgraphs on The Graph network concurrently.
+```
 
 #### aggregate_groupby
+```
 Aggregating data into different groups
+```
 
 #### aggregate_timeseries
+```
 Aggregating time series data into different groups by various time intervals.
+```
 
 #### plot_line
+```
 Draw a line chart.
+```
 
 
 ### Live demo
