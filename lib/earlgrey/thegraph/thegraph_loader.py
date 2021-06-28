@@ -103,13 +103,13 @@ def parse_thegraph_query(queryTemplate):
     return entities
 
 @st.cache(show_spinner=False)
-def load_subgraph_per_entity_per_page(entityName, url, query, since):
+def load_subgraph_per_entity_per_page(entity_name, url, query, since):
     if not since == None:
         query = query.replace('__LASTID__', since)
     
     response = requests.post(url, json={'query': query})
     text = json.loads(response.text)
-    return text["data"][entityName]
+    return text["data"][entity_name]
 
 def load_subgraph_per_entity_all_pages(url, entity:TheGraphEntity):
     arr = []
@@ -205,35 +205,3 @@ def load_subgraphs(params:list[SubgraphDef]):
                 print('exception!! ')
                 print(exc)
     return results
-
-
-# url_aave_subgraph = 'https://api.thegraph.com/subgraphs/name/aave/protocol'
-# query_template = """
-# {
-#     deposits(
-#       where:{timestamp_gt:1609459200, timestamp_lt:1609462800}
-#         orderBy: timestamp
-#         orderDirection: desc
-#     ) {
-#         reserve {
-#             symbol,
-#             name,
-#             decimals
-#         }
-#         amount
-#         timestamp
-#     }
-#     flashLoans(
-#         orderBy: timestamp
-#         orderDirection: asc
-#     ){
-#         amount
-#         timestamp
-#     }
-# }
-# """
-
-# data = load_subgraph(url_aave_subgraph, query_template)
-# for k in data.keys():
-#     st.subheader(k)
-#     st.write(data[k])

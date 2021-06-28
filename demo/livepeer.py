@@ -84,7 +84,6 @@ plot_line(
 st.subheader('Stake moved over rounds')
 df_amount_over_round = ts.aggregate_groupby(df_amount, 
     by_column='round.id', 
-    interval=ts.TimeseriesInterval.DAILY, 
     columns=[ts.ColumnConfig(name="amount", aggregate_method=ts.AggregateMethod.SUM, type=ts.ColumnType.float, na_fill_value=0.0)]
 )
 st.warning('todo: Line chart with non time series index. Here is the aggregated data.')

@@ -1,6 +1,6 @@
-import lib.earlgrey.thegraph.thegraph_loader as gl
-import lib.earlgrey.crypto_compare as cp
-import lib.earlgrey.transformers.timeseries as ts
+import lib.earlgreythegraph.thegraph_loader as gl
+import lib.earlgreycrypto_compare as cp
+import lib.earlgreytransformers.timeseries as ts
 from pandas.core.frame import DataFrame
 import streamlit as st
 import pandas as pd
@@ -8,7 +8,17 @@ import math
 import datetime
 import time
 # from flash_card import flash_card
-from lib.earlgrey.charts.line import plot as plot_line
+from lib.earlgreycharts.line import plot as plot_line
+
+import os
+# 
+# if CP_API_TOKEN == None:
+#     os.environ.set
+from dotenv import load_dotenv
+load_dotenv()
+CP_API_TOKEN = os.environ.get('cp_api_token')
+print(CP_API_TOKEN) 
+
 
 TOKENS = ['AAVE', 'ETH', 'USDC', 'WBTC']
 token_symbol = TOKENS[0]
@@ -57,7 +67,7 @@ query = """
 )
 
 def get_rates_df(symbol, start_timestamp, end_timestamp):
-    pricing =cp.load_historical_data(symbol, 'USD', start_timestamp, end_timestamp, 'ca33529afca554710e06cb5b1fee7e834f0cef857412e386d94daf4d932b20ab', 2000)
+    pricing = cp.load_historical_data(symbol, 'USD', start_timestamp, end_timestamp, CP_API_TOKEN, 2000)
     rates = []
     for p in pricing:
         rates.append({"rate": p["close"], "time": pd.to_datetime(p['time'], unit='s')})
@@ -106,7 +116,7 @@ def process_deposits(deposits, df_rates):
         end_timestamp=end_timestamp
         
     )
-    print(f'after aggregate \n{df}')
+    # print(f'after aggregate \n{df}')
     result[interval] = df
     return result
 

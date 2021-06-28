@@ -29,7 +29,7 @@ docopt==0.6.2
 docutils==0.17.1
 dominate==2.6.0
 entrypoints==0.3
--e git+git@github.com:scout-cool/streamlit_flow.git@c703ff97dd80559a9a7237a385004d07bd2cec51#egg=example_pkg_earlgrey
+-e git+git@github.com:scout-cool/streamlit_flow.git@56a3f28fad772c2c3efd9732e5ca5c7773ce70c3#egg=example_pkg_earlgrey
 face==20.1.1
 filelock==3.0.12
 furl==2.1.2
@@ -71,6 +71,7 @@ packaging==20.9
 pandas==1.2.4
 pandocfilters==1.4.3
 parso==0.8.2
+pdoc==7.1.1
 pep517==0.10.0
 pexpect==4.8.0
 pickleshare==0.7.5
@@ -92,6 +93,7 @@ Pygments==2.8.1
 pyparsing==2.4.7
 pyrsistent==0.17.3
 python-dateutil==2.8.1
+python-dotenv==0.18.0
 pytz==2021.1
 PyYAML==5.4.1
 pyzmq==22.0.3
