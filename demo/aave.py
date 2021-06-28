@@ -1,6 +1,6 @@
-import lib.earlgreythegraph.thegraph_loader as gl
-import lib.earlgreycrypto_compare as cp
-import lib.earlgreytransformers.timeseries as ts
+import earlgrey.thegraph.thegraph_loader as gl
+import earlgrey.crypto_compare as cp
+import earlgrey.transformers.timeseries as ts
 from pandas.core.frame import DataFrame
 import streamlit as st
 import pandas as pd
@@ -8,7 +8,7 @@ import math
 import datetime
 import time
 # from flash_card import flash_card
-from lib.earlgreycharts.line import plot as plot_line
+from earlgrey.charts.line import plot as plot_line
 
 import os
 # 
