@@ -6,8 +6,8 @@ import json
 import concurrent.futures
 
 from streamlit.report_thread import add_report_ctx
-
 from graphql import parse, print_ast, ArgumentNode, NameNode, IntValueNode, FieldNode, SelectionSetNode, ObjectValueNode, StringValueNode, ObjectFieldNode, EnumValueNode
+
 
 ITEMS_PER_PAGE = 1000
 class SubgraphDef:
@@ -89,7 +89,7 @@ class TheGraphEntity:
     def __repr__(self):
         return str(self)
     
-def parse_thegraph_query(queryTemplate):
+def _parse_thegraph_query(queryTemplate):
     ast = parse(queryTemplate, no_location=True)
     if(len(ast.definitions) != 1):
         raise ValueError('The graph query must have one and only definition.')
@@ -102,7 +102,7 @@ def parse_thegraph_query(queryTemplate):
     return entities
 
 @st.cache(show_spinner=False)
-def load_subgraph_per_entity_per_page(entity_name, url, query, since):
+def _load_subgraph_per_entity_per_page(entity_name, url, query, since):
     if not since == None:
         query = query.replace('__LASTID__', since)
     
@@ -110,25 +110,28 @@ def load_subgraph_per_entity_per_page(entity_name, url, query, since):
     text = json.loads(response.text)
     return text["data"][entity_name]
 
-def load_subgraph_per_entity_all_pages(url, entity:TheGraphEntity):
+def _load_subgraph_per_entity_all_pages(url, entity:TheGraphEntity, progressCallback):
     arr = []
     i = 0
     while True:
         l = len(arr)
         query = entity.initialQuery if l == 0 else entity.paginationQuery
         since = None if l == 0 else arr[l-1]['id']
-        parr = load_subgraph_per_entity_per_page(entity.name, url, '{'+query+'}', since)
+        parr = _load_subgraph_per_entity_per_page(entity.name, url, '{'+query+'}', since)
         arr.extend(parr)
         l = len(parr)
-        print('!!pagination asc '+entity.name+' '+str(i)+' '+str(since)+' '+str(len(arr)))
+        if progressCallback != None:
+            progressCallback({'entity': entity.name, 'count':len(arr)})
+
+        # print('!!pagination asc '+entity.name+' '+str(i)+' '+str(since)+' '+str(len(arr)))
         i += 1
         if(l == 0 or l < ITEMS_PER_PAGE or len(arr) >= entity.limit):
             break
     return arr
 
-def load_subgraph_per_entity(url, e:TheGraphEntity):
+def _load_subgraph_per_entity(url, e:TheGraphEntity, progressCallback):
     if(e.bypassPagination):
-        arr = load_subgraph_per_entity_all_pages(url, e)
+        arr = _load_subgraph_per_entity_all_pages(url, e, progressCallback)
         if hasattr(e, 'orderBy'):
             try:
                 reverse = False if hasattr(e, 'orderDirection') and e.orderDirection == 'desc' else True
@@ -150,27 +153,27 @@ def load_subgraph_per_entity(url, e:TheGraphEntity):
     else:
         return {
             'entity': e.name,
-            'data': load_subgraph_per_entity_per_page(e.name, url, '{'+e.initialQuery+'}', None)
+            'data': _load_subgraph_per_entity_per_page(e.name, url, '{'+e.initialQuery+'}', None)
         }
 
 
-def load_subgraph_wo_concurrency(url, queryTemplate):
-    entities = parse_thegraph_query(queryTemplate)
-    # print(entities)
-    results = {}
-    for e in entities:
-        data = load_subgraph_per_entity(url, e)
-        results[data['entity']] = data['data']
-    return results
+# def load_subgraph_wo_concurrency(url, queryTemplate):
+#     entities = _parse_thegraph_query(queryTemplate)
+#     # print(entities)
+#     results = {}
+#     for e in entities:
+#         data = _load_subgraph_per_entity(url, e)
+#         results[data['entity']] = data['data']
+#     return results
 
-def load_subgraph(url, queryTemplate):
-    entities = parse_thegraph_query(queryTemplate)
+def load_subgraph(url, queryTemplate, progressCallback=None):
+    entities = _parse_thegraph_query(queryTemplate)
     # print(entities)
     results = {}
 
     # https://stackoverflow.com/questions/2632520/what-is-the-fastest-way-to-send-100-000-http-requests-in-python
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(entities)) as executor:
-        future_to_url = {executor.submit(load_subgraph_per_entity, url, e) for e in entities}
+        future_to_url = {executor.submit(_load_subgraph_per_entity, url, e, progressCallback) for e in entities}
         for thread in executor._threads:
             add_report_ctx(thread)
 

@@ -1,7 +1,7 @@
-import lib.earlgrey.thegraph.thegraph_loader as gl
-import lib.earlgrey.crypto_compare as cp
-import lib.earlgrey.transformers.timeseries as ts
-from lib.earlgrey.charts.line import plot as plot_line
+import earlgrey.thegraph.thegraph_loader as gl
+import earlgrey.crypto_compare as cp
+import earlgrey.transformers.timeseries as ts
+from earlgrey.charts.line import plot as plot_line
 from pandas.core.frame import DataFrame
 import streamlit as st
 import pandas as pd
@@ -12,14 +12,13 @@ import time
 
 import os
 
-from dotenv import load_dotenv
-load_dotenv()
-
+# from dotenv import load_dotenv
+# load_dotenv()
 
 st.markdown(""" <style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-</style> """, unsafe_allow_html=True)
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style> """, unsafe_allow_html=True)
 
 CP_API_TOKEN = os.environ.get('cp_api_token')
 TOKENS = ['AAVE', 'ETH', 'USDC', 'WBTC']
@@ -41,7 +40,7 @@ if not len(date_range) == 2:
 start_timestamp = int(time.mktime(date_range[0].timetuple()))
 end_timestamp = int(time.mktime(date_range[1].timetuple()))
 
-INTERVALS = {ts.TimeseriesInterval.HOURLY: 'Hourly', ts.TimeseriesInterval.DAILY: 'Daily', ts.TimeseriesInterval.WEEKLY:'Monthly', ts.TimeseriesInterval.WEEKLY:'Monthly'}
+INTERVALS = {ts.TimeseriesInterval.HOURLY: 'Hourly', ts.TimeseriesInterval.DAILY: 'Daily', ts.TimeseriesInterval.WEEKLY:'Weekly', ts.TimeseriesInterval.MONTHLY:'Monthly'}
 interval = st.selectbox('Set aggregation frequency', options=list(INTERVALS.keys()), format_func=lambda x: INTERVALS[x], index=1)
 
 
@@ -76,9 +75,14 @@ def get_rates_df(symbol, start_timestamp, end_timestamp):
     return DataFrame(rates).set_index('time') 
 
 
+placeholder = st.empty()
+def on_deposits_progress(obj):
+    msg = f"Fetched {obj['count']} {obj['entity']}."
+    placeholder.text(msg)
+
 @st.cache(show_spinner=False)
 def get_token_deposits():
-    data = gl.load_subgraph(subgraph_url, query)
+    data = gl.load_subgraph(subgraph_url, query, on_deposits_progress)
     deposits = data["data"]["deposits"]
     _eth_deposits = []
     for d in deposits:
@@ -103,7 +107,6 @@ def process_deposits(deposits, df_rates):
     df_hourly = df_hourly.merge(df_rates, left_index=True, right_index=True)
     df_hourly["volume"] = df_hourly["amount"] * df_hourly["rate"]
     result = {}
-    print(interval)
     
     df = ts.aggregate_timeseries(
         data=df_hourly, 
