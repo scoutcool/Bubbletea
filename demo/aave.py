@@ -1,7 +1,7 @@
-import earlgrey.thegraph.thegraph_loader as gl
-import earlgrey.crypto_compare as cp
-import earlgrey.transformers.timeseries as ts
-from earlgrey.charts.line import plot as plot_line
+import lib.earlgrey.thegraph.thegraph_loader as gl
+import lib.earlgrey.crypto_compare as cp
+import lib.earlgrey.transformers.timeseries as ts
+from lib.earlgrey.charts.line import plot as plot_line
 from pandas.core.frame import DataFrame
 import streamlit as st
 import pandas as pd
