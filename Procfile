@@ -1,1 +1,1 @@
-web: sh setup.sh && streamlit run lpt.py
+web: sh setup.sh && streamlit run demo/notebook.py
