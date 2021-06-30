@@ -1,5 +1,4 @@
 
-import json
 import math
 import datetime
 from typing import Dict, Union
@@ -24,7 +23,6 @@ class AggregateMethod(str, Enum):
     MIN = 'min',
     MAX = 'max',
     COUNT = 'count'
-
 
 class NaInterpolationMethod(str, Enum):
     FORDWARD_FILL='ffill',
@@ -51,10 +49,12 @@ def last_day_of_month(any_day):
     next_month = any_day.replace(day=28) + datetime.timedelta(days=4)
     return next_month - datetime.timedelta(days=next_month.day)
 
-def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str, interval:TimeseriesInterval, columns:list[ColumnConfig], **kwargs):
+def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str, interval:TimeseriesInterval, columns:list[ColumnConfig], start_timestamp:int=None, end_timestamp:int=None):
     df = to_df(data)
     if df.index.name == time_column:
         df = df.reset_index()
+    if len(df) == 0:
+        return df
     
     tmin = df[time_column].min()
     tmax = df[time_column].max()
@@ -62,11 +62,11 @@ def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str,
         tmin = tmin.timestamp()
     if hasattr(tmax, 'timestamp'):
         tmax = tmax.timestamp()
-    
-    if 'start_timestamp' in kwargs:
-        tmin = kwargs.get('start_timestamp',tmin)
-    if 'end_timestamp' in kwargs:
-        tmax = kwargs.get('end_timestamp',tmax)
+
+    if start_timestamp != None:
+        tmin = start_timestamp
+    if end_timestamp != None:
+        tmax = end_timestamp
     
     if interval == TimeseriesInterval.HOURLY:
         tmin = pd.to_datetime(math.floor(tmin / 3600) * 3600, unit='s')
@@ -132,8 +132,10 @@ def aggregate_timeseries(data:Union[Dict,list[Dict],DataFrame], time_column:str,
         i += 1
     return result_df
 
-def aggregate_groupby(data:Union[Dict,list[Dict],DataFrame], by_column:str, columns:list[ColumnConfig], **kwargs):
+def aggregate_groupby(data:Union[Dict,list[Dict],DataFrame], by_column:str, columns:list[ColumnConfig]):
     df = to_df(data)
+    if len(df) == 0:
+        return df
     params = dict()
     for c in columns:
         if c.type != None:

@@ -157,18 +157,26 @@ def _load_subgraph_per_entity(url, e:TheGraphEntity, progressCallback):
         }
 
 
-# def load_subgraph_wo_concurrency(url, queryTemplate):
-#     entities = _parse_thegraph_query(queryTemplate)
-#     # print(entities)
-#     results = {}
-#     for e in entities:
-#         data = _load_subgraph_per_entity(url, e)
-#         results[data['entity']] = data['data']
-#     return results
+"""
+Fetch data from a single subgraph, multiple entities are supported.
+Params:
+`url`: The url of the subgraph. [Explore subgraphs](https://thegraph.com/explorer/)
+`query`: The graph query. [Docs](https://thegraph.com/docs/graphql-api#queries)
+    `bypassPagination`: Boolean value, default `False`. The graph has a limitation of 10000 items max per request. To load all items in the selected query, add this flag in the filter of each entity. For example: `deposits(bypassPagination, ....) {...}`.
+    If `False`, the function will retrieve 100 items.
+Return:
+```
+{
+    'url': url,
+    'data': {
+        <entityName>: <array_of_items_from_the_graph>
+    }
+}
+```
 
-def load_subgraph(url, queryTemplate, progressCallback=None):
-    entities = _parse_thegraph_query(queryTemplate)
-    # print(entities)
+"""
+def load_subgraph(url, query, progressCallback=None):
+    entities = _parse_thegraph_query(query)
     results = {}
 
     # https://stackoverflow.com/questions/2632520/what-is-the-fastest-way-to-send-100-000-http-requests-in-python
@@ -189,21 +197,34 @@ def load_subgraph(url, queryTemplate, progressCallback=None):
         'data': results
     }
 
-def load_subgraphs(params:list[SubgraphDef]):
+"""
+Fetch data from multiple .
+Params:
+`url`: The url of the subgraph. [Explore subgraphs](https://thegraph.com/explorer/)
+`query`: The graph query. [Docs](https://thegraph.com/docs/graphql-api#queries)
+    `bypassPagination`: Boolean value, default `False`. The graph has a limitation of 10000 items max per request. If to load all items in the selected query, add this flag in the filter of each entity. For example: `deposits(bypassPagination, ....) {...}`.
+Return:
+```
+{
+    <url1>: {
+        <entityName>: <array_of_items_from_the_graph>
+    },
+    <url2>: {
+        <entityName>: <array_of_items_from_the_graph>
+    }
+}
+"""
+def load_subgraphs(defs:list[SubgraphDef]):
     results = {}
-    # print(len(params))
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(params)) as executor:
-        future_to_url = {executor.submit(load_subgraph, param.url, param.query) for param in params}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(defs)) as executor:
+        future_to_url = {executor.submit(load_subgraph, d.url, d.query) for d in defs}
         for thread in executor._threads:
             add_report_ctx(thread)
 
         for future in concurrent.futures.as_completed(future_to_url):
             try:
                 data = future.result()
-                print('!!result')
-                print(data['url'])
                 results[data['url']] = data['data']
             except Exception as exc:
-                print('exception!! ')
-                print(exc)
+                st.exception(e)
     return results
