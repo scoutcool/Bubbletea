@@ -66,7 +66,6 @@ df_amount_over_time = ts.aggregate_timeseries(df_amount,
     columns=[ts.ColumnConfig(name="amount", aggregate_method=ts.AggregateMethod.SUM, type=ts.ColumnType.float, na_fill_value=0.0)]
 )
 df_amount_over_time.index.names = ['time']
-# st.write(df_amount)
 st.subheader('Stake moved over time')
 plot_line(
     df_amount_over_time,
@@ -86,20 +85,22 @@ df_amount_over_round = ts.aggregate_groupby(df_amount,
     by_column='round.id', 
     columns=[ts.ColumnConfig(name="amount", aggregate_method=ts.AggregateMethod.SUM, type=ts.ColumnType.float, na_fill_value=0.0)]
 )
-st.warning('todo: Line chart with non time series index. Here is the aggregated data.')
+st.warning('todo: Numbers are treated as timestamp. Pending https://app.asana.com/0/0/1200542653753233/f')
+df_amount_over_round.index.names = ['round']
 st.write(df_amount_over_round)
-# plot_line(
-#     df_amount_over_round,
-#     x={
-#         'field':'round.id', 
-#     },
-#     ys=[
-#         {
-#             "field": "amount",
-#             "title": "Amount",
-#         }
-#     ],
-# )
+plot_line(
+    df_amount_over_round,
+    x={
+        'field':'round', 
+        'title': 'Round'
+    },
+    ys=[
+        {
+            "field": "amount",
+            "title": "Amount",
+        }
+    ],
+)
 
 
 st.subheader('Transcoder Stake Changes')
