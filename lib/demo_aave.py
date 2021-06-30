@@ -1,17 +1,17 @@
-import lib.earlgrey.thegraph.thegraph_loader as gl
-import lib.earlgrey.crypto_compare as cp
-import lib.earlgrey.transformers.timeseries as ts
-from lib.earlgrey.charts.line import plot as plot_line
+from earlgrey.thegraph import thegraph_loader as gl
+from earlgrey.transformers import timeseries as ts
+from earlgrey import crypto_compare as cp
+from earlgrey.charts.line import plot as plot_line
+from earlgrey.charts.line import plot as plot_line
 from pandas.core.frame import DataFrame
 import streamlit as st
 import pandas as pd
 import math
 import datetime
 import time
-# from flash_card import flash_card
-
 import os
 
+# from flash_card import flash_card
 # from dotenv import load_dotenv
 # load_dotenv()
 
@@ -77,7 +77,7 @@ def get_rates_df(symbol, start_timestamp, end_timestamp):
 
 placeholder = st.empty()
 def on_deposits_progress(obj):
-    msg = f"Fetched {obj['count']} {obj['entity']}."
+    msg = f"{obj['count']} {obj['entity']} loaded."
     placeholder.text(msg)
 
 @st.cache(show_spinner=False)
@@ -137,6 +137,7 @@ with st.spinner("Loading and aggregating deposit data"):
     for p in dfs.keys():
         st.subheader(p)
         df = dfs[p]
+        st.subheader('line chart')
         
         plot_line(
             df,

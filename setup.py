@@ -1,10 +1,10 @@
 import setuptools
 from os import path
 
-VERSION = "0.0.16"
+VERSION = "0.0.17"
 NAME="Earlgrey"
 DESCRIPTION = "hello "+NAME
-LONG_DESCRIPTION = "https://github.com/scout-cool/streamlit_flow"
+LONG_DESCRIPTION = "https://github.com/scout-cool/earlgrey"
 
 
 # import sys
@@ -34,7 +34,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="lib"),
     # install_requirements=requirements,
     install_requires=[
-        'streamlit','graphql-core','python-dotenv'
+        'streamlit','graphql-core'
     ],
     entry_points={
         'console_scripts': ['earlgrey = earlgrey.cli:run']

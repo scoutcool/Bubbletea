@@ -15,12 +15,11 @@ display, editor = st.beta_columns((1, 1))
 
 selected_demo = None
 with st.sidebar:
-    files = os.listdir('demo/')
-    files.remove('notebook.py')
+    files = [filename for filename in os.listdir('./lib') if filename.startswith("demo_")]
     selected_demo = st.selectbox('🌟 Pick one', sorted(files))
 
 code_input = """st.header("Earlgrey Demos")"""
-with open(f'demo/{selected_demo}', 'r') as file:
+with open(f'./lib/{selected_demo}', 'r') as file:
     code_input = file.read()
 
 with editor:

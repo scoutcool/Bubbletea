@@ -4,7 +4,7 @@ import requests
 import json
 
 @st.cache(show_spinner=False)
-def _load_historical_data(from_symbol:str, to_symbol:str, stime:int, etime:int, limit:int, apikey:str):
+def _load_historical_data(from_symbol:str, to_symbol:str, etime:int, limit:int, apikey:str):
     url = f"https://min-api.cryptocompare.com/data/histohour?fsym={from_symbol}&tsym={to_symbol}&limit={limit}&aggregate=1&e=CCCAGG&extraParams=earlgrey&api_key={apikey}&toTs={etime}"
     response = requests.get(url)
     text = json.loads(response.text)
@@ -32,7 +32,7 @@ def load_historical_data(from_symbol:str, to_symbol:str, start_timestamp:int, en
     while et > start_timestamp:
         st = max(et - 3600 * apilimit, stime)
         l = (apilimit - 1) if limit > apilimit else limit
-        rs = _load_historical_data(from_symbol, to_symbol, st, et, l, apikey)
+        rs = _load_historical_data(from_symbol, to_symbol, et, l, apikey)
         rates.extend(rs)
         limit -= apilimit
         et = st

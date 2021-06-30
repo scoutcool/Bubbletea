@@ -1,11 +1,11 @@
 import datetime
-from pandas.core.reshape.concat import concat
 import streamlit as st
 import time
 import pandas as pd
-import lib.earlgrey.thegraph.thegraph_loader as gl
-import lib.earlgrey.transformers.timeseries as ts
-from lib.earlgrey.charts.line import plot as plot_line
+import earlgrey.thegraph.thegraph_loader as gl
+import earlgrey.transformers.timeseries as ts
+from earlgrey.charts.line import plot as plot_line
+
 
 st.header('LIVEPEER Stake Movement')
 date_range = st.date_input("Date range",(datetime.date.today() - datetime.timedelta(days=7), datetime.date.today() - datetime.timedelta(days=0)))
