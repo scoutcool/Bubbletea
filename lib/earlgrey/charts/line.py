@@ -1,3 +1,4 @@
+from altair.utils.schemapi import Undefined
 from altair.vegalite.v4.schema.channels import Opacity
 import streamlit as st
 import altair as alt
@@ -41,11 +42,21 @@ def plot(
     ys: list[alt.Y] = [],
     palette=PALETTE,
     timeFormat="%b %d",
+    legend="right",  # could be 'left', 'right', 'none'
 ):
     frames = df.reset_index()
 
     x_config = {**DEFAULT_X, **x}
     ys_config = list(map(lambda y: {**DEFAULT_Y, **y}, ys))
+
+    # Add additional columns
+    if "title" in x_config:
+        frames[x_config["title"]] = frames[x_config["field"]]
+        x_config["field"] = x_config["title"]
+        del x_config["title"]
+    for yc in ys_config:
+        if "title" in yc:
+            frames[yc["title"]] = frames[yc["field"]]
 
     # Create a selection that chooses the nearest point & selects based on x-value
     hover_selection = alt.selection(
@@ -68,7 +79,12 @@ def plot(
             opacity=alt.condition(hover_selection, alt.value(1), alt.value(0)),
             tooltip=[
                 x_config["field"],
-                *list(map(lambda y_config: y_config["field"], ys_config)),
+                *list(
+                    map(
+                        lambda y_config: y_config["title"] or y_config["field"],
+                        ys_config,
+                    )
+                ),
             ],
         )
         .add_selection(hover_selection)
@@ -83,18 +99,26 @@ def plot(
             opacity=alt.condition(click_selection, alt.value(1), alt.value(0)),
             tooltip=[
                 x_config["field"],
-                *list(map(lambda y_config: y_config["field"], ys_config)),
+                *list(
+                    map(
+                        lambda y_config: y_config["title"] or y_config["field"],
+                        ys_config,
+                    )
+                ),
             ],
         )
         .transform_filter(click_selection)
     )
 
     def _get_line_chart(columnDef: alt.Y, index: int):
+        column_label = columnDef["field"] + "-label"
+        frames[column_label] = columnDef["title"] or columnDef["field"]
+
         base = alt.Chart(frames).encode(
             alt.X(
                 title="",
                 axis=alt.Axis(
-                    values=frames["time"].tolist(),
+                    values=frames[x_config["field"]].tolist(),
                     format=timeFormat,
                     domain=False,
                     grid=False,
@@ -105,16 +129,28 @@ def plot(
             alt.Y(
                 axis=alt.Axis(
                     format=".2s",
-                    titleColor=alt.Value(PALETTE[index]),
+                    titleColor=alt.Value(palette[index]),
                     labelExpr="replace(datum.label, 'G', 'B')",
                 ),
                 **columnDef,
             ),
+            color=(
+                alt.Color(
+                    field=column_label,
+                    type="ordinal",
+                    legend=(
+                        None
+                        if legend == "none"
+                        else alt.Legend(title="", orient=legend)
+                    ),
+                    scale=alt.Scale(range=palette),
+                )
+            ),
         )
-        line = base.mark_line(color=PALETTE[index])
+        line = base.mark_line(color=palette[index])
 
         # hover annotations
-        hover_point = base.mark_point(color=PALETTE[index]).encode(
+        hover_point = base.mark_point(color=palette[index]).encode(
             y=alt.Y(
                 axis=None,
                 **columnDef,
