@@ -11,9 +11,9 @@ import datetime
 import time
 import os
 
-from flash_card import flash_card
-from dotenv import load_dotenv
-load_dotenv()
+# from flash_card import flash_card
+# from dotenv import load_dotenv
+# load_dotenv()
 
 st.markdown(""" <style>
     #MainMenu {visibility: hidden;}
@@ -163,11 +163,11 @@ with st.spinner("Loading and aggregating deposit data"):
         )
 
         if len(df) > 1:
-            # st.warning('Flash card is commented for now since not listed in requirements.txt')
-            coeff = df['amount'].corr(df['rate'])
-            flash_card(
-                "coefficient between `amount` and `rate`",
-                primary_text=0.1,
-                formatter="0,0.00a",
-                key=f"normal{p}",
-            )
+            st.warning('Flash card is commented for now since not listed in requirements.txt')
+            # coeff = df['amount'].corr(df['rate'])
+            # flash_card(
+            #     "coefficient between `amount` and `rate`",
+            #     primary_text=0.1,
+            #     formatter="0,0.00a",
+            #     key=f"normal{p}",
+            # )
