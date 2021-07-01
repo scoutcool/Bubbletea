@@ -214,7 +214,7 @@ Return:
     }
 }
 """
-def load_subgraphs(defs:list[SubgraphDef]):
+def load_subgraphs(defs:'list[SubgraphDef]'):
     results = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(defs)) as executor:
         future_to_url = {executor.submit(load_subgraph, d.url, d.query) for d in defs}

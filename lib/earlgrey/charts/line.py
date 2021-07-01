@@ -39,7 +39,7 @@ DEFAULT_Y: alt.Y = {
 def plot(
     df: DataFrame,
     x: alt.X = DEFAULT_X,
-    ys: list[alt.Y] = [],
+    ys: 'list[alt.Y]' = [],
     palette=PALETTE,
     timeFormat="%b %d",
     legend="right",  # could be 'left', 'right', 'none'
