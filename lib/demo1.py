@@ -19,9 +19,12 @@ query_aave = """
 
 data = gl.load_subgraph(url_aave_subgraph, query_aave)
 data = pd.json_normalize(data["data"]["deposits"])
-data["timestamp"] = data["timestamp"].apply(lambda x: pd.to_datetime(x, unit="s")) # will be removed once chart lib is updated
+data["timestamp"] = data["timestamp"].apply(
+    lambda x: pd.to_datetime(x, unit="s")
+)  # will be removed once chart lib is updated
 
-l.plot(data, 
-    x={"title":"Time", "field":"timestamp"},
-    ys = [{"title":"Amount", "field":"amount"}]
-    )
+l.plot(
+    data,
+    x={"title": "Time", "field": "timestamp"},
+    yLeft=[{"title": "Amount", "field": "amount"}],
+)

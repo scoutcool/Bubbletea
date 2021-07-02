@@ -6,6 +6,7 @@ from pandas import DataFrame
 from functools import reduce
 
 PALETTE = [
+    "#FF3333",
     "#66D2C3",
     "#2E678E",
     "#F9965B",
@@ -39,22 +40,30 @@ DEFAULT_Y: alt.Y = {
 def plot(
     df: DataFrame,
     x: alt.X = DEFAULT_X,
-    ys: 'list[alt.Y]' = [],
+    yLeft: "list[alt.Y]" = [],
+    yRight: "list[alt.Y]" = [],
     palette=PALETTE,
+    height: int = 400,
     timeFormat="%b %d",
+    title: str = None,
     legend="right",  # could be 'left', 'right', 'none'
 ):
     frames = df.reset_index()
 
     x_config = {**DEFAULT_X, **x}
-    ys_config = list(map(lambda y: {**DEFAULT_Y, **y}, ys))
+    ys_config_left = list(map(lambda y: {**DEFAULT_Y, **y}, yLeft))
+    ys_config_right = list(map(lambda y: {**DEFAULT_Y, **y}, yRight))
+    ys_config_all = ys_config_left + ys_config_right
+
+    if title != None:
+        st.subheader(title)
 
     # Add additional columns
     if "title" in x_config:
         frames[x_config["title"]] = frames[x_config["field"]]
         x_config["field"] = x_config["title"]
         del x_config["title"]
-    for yc in ys_config:
+    for yc in ys_config_all:
         if "title" in yc:
             frames[yc["title"]] = frames[yc["field"]]
 
@@ -73,7 +82,7 @@ def plot(
     # Draw a rule at the location of the selection
     hover_rule = (
         alt.Chart(frames)
-        .mark_rule(color=palette[len(ys)])
+        .mark_rule(color=palette[0])
         .encode(
             x=alt.X(**x_config),
             opacity=alt.condition(hover_selection, alt.value(1), alt.value(0)),
@@ -82,7 +91,7 @@ def plot(
                 *list(
                     map(
                         lambda y_config: y_config["title"] or y_config["field"],
-                        ys_config,
+                        ys_config_all,
                     )
                 ),
             ],
@@ -93,7 +102,7 @@ def plot(
 
     multi_rules = (
         alt.Chart(frames)
-        .mark_rule(color=palette[len(ys)])
+        .mark_rule(color=palette[0])
         .encode(
             x=alt.X(**x_config),
             opacity=alt.condition(click_selection, alt.value(1), alt.value(0)),
@@ -102,7 +111,7 @@ def plot(
                 *list(
                     map(
                         lambda y_config: y_config["title"] or y_config["field"],
-                        ys_config,
+                        ys_config_all,
                     )
                 ),
             ],
@@ -110,9 +119,10 @@ def plot(
         .transform_filter(click_selection)
     )
 
-    def _get_line_chart(columnDef: alt.Y, index: int):
+    def _get_line_chart(columnDef: alt.Y, index: int, orient="left"):
         column_label = columnDef["field"] + "-label"
         frames[column_label] = columnDef["title"] or columnDef["field"]
+        color = palette[index + 1]
 
         base = alt.Chart(frames).encode(
             alt.X(
@@ -123,14 +133,16 @@ def plot(
                     domain=False,
                     grid=False,
                 ),
-                scale=alt.Scale(nice={"interval": "day", "step": 1}),
+                # scale=alt.Scale(nice={"interval": "day", "step": 1}),
                 **x_config,
             ),
             alt.Y(
                 axis=alt.Axis(
                     format=".2s",
-                    titleColor=alt.Value(palette[index]),
+                    titleColor=alt.Value(color),
                     labelExpr="replace(datum.label, 'G', 'B')",
+                    grid=False,
+                    orient=orient,
                 ),
                 **columnDef,
             ),
@@ -143,70 +155,68 @@ def plot(
                         if legend == "none"
                         else alt.Legend(title="", orient=legend)
                     ),
-                    scale=alt.Scale(range=palette),
+                    scale=alt.Scale(range=palette[1:]),
                 )
             ),
         )
-        line = base.mark_line(color=palette[index])
+        line = base.mark_line(color=color, strokeJoin="round")
 
         # hover annotations
-        hover_point = base.mark_point(color=palette[index]).encode(
+        hover_point = base.mark_point(color=color).encode(
             y=alt.Y(
-                axis=None,
+                axis=alt.Axis(title=""),
                 **columnDef,
             ),
             opacity=alt.condition(hover_selection, alt.value(1), alt.value(0)),
         )
 
-        # hover_text = base.mark_text(
-        #     align="left", dx=8, dy=-8, color=PALETTE[index]
-        # ).encode(
-        #     y=alt.Y(
-        #         axis=None,
-        #         **columnDef,
-        #     ),
-        #     text=alt.condition(hover_selection, columnDef, alt.value(" ")),
-        # )
-
         # sticky annotations
-        sticky_points = base.mark_point(color=PALETTE[index]).encode(
+        sticky_points = base.mark_point(color=color).encode(
             y=alt.Y(
-                axis=None,
+                axis=alt.Axis(title=""),
                 **columnDef,
             ),
             opacity=alt.condition(click_selection, alt.value(1), alt.value(0)),
         )
-
-        # sticky_texts = base.mark_text(
-        #     align="left", dx=8, dy=-8, color=PALETTE[index]
-        # ).encode(
-        #     y=alt.Y(
-        #         axis=None,
-        #         **columnDef,
-        #     ),
-        #     text=alt.condition(click_selection, columnDef, alt.value(" ")),
-        # )
 
         return {
             "line": line,
             "annotations": [hover_point, sticky_points],
         }
 
-    charts = []
-    annotations = []
+    charts = {"yLeft": [], "yRight": []}
+    annotations = {"yLeft": [], "yRight": []}
+    combined_charts = []
 
-    for i, y in enumerate(ys_config):
-        chart_result = _get_line_chart(y, i)
-        charts.append(chart_result["line"])
-        annotations += chart_result["annotations"]
+    if len(yLeft) > 0:
+        for i, y in enumerate(ys_config_left):
+            chart_result = _get_line_chart(y, i)
+            charts["yLeft"].append(chart_result["line"])
+            annotations["yLeft"] += chart_result["annotations"]
 
-    charts.append(hover_rule)
-    charts.append(multi_rules)
-    charts += annotations
+        combined_charts.append(
+            alt.layer(*charts["yLeft"], *annotations["yLeft"]).properties(height=height)
+        )
 
-    combined = alt.layer(*charts).resolve_scale(y="independent")
+    if len(yRight) > 0:
+        for i, y in enumerate(ys_config_right):
+            chart_result = _get_line_chart(y, i + len(ys_config_left), "right")
+            charts["yRight"].append(chart_result["line"])
+            annotations["yRight"] += chart_result["annotations"]
+
+        combined_charts.append(
+            alt.layer(*charts["yRight"], *annotations["yRight"]).properties(
+                height=height
+            )
+        )
+
+    combined = (
+        alt.layer(*combined_charts, hover_rule, multi_rules)
+        .resolve_scale(y="independent")
+        .properties(height=height)
+    )
 
     st.altair_chart(
-        combined.properties(height=400),
+        combined,
         use_container_width=True,
     )
