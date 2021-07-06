@@ -150,6 +150,46 @@ def plot(
     title: str = None,
     legend="right",  # could be 'left', 'right', 'none',
 ):
+    """Plot a line chart for the given data frame.
+
+    Parameters
+    ----------
+    df : pd.DataFrame (required)
+        The data frame to plot a line chart with.
+
+    x : altair.X (optional)
+        Configuration for altair X encoding. Default to {"field": "time", "type": "temporal"}
+
+    ys : List of altair.Y (required)
+        Configurations for altair Y encoding. E.g. {"field": "amount", "type": "quantitative"}
+
+        "field" is required, "type" and other formatting options will be inferred from the data on the best-effort basis.
+
+        `ys` will overwrite `yLeft` if both are defined.
+
+    yLeft : List of altair.Y (optional)
+        Configurations for left-side altair Y encoding.
+
+    yRight : List of altair.Y (optional)
+        Configurations for right-side altair Y encoding.
+
+    palette: List of colors (optional)
+        Color palette for data series, wil be used in order.
+
+    height: int (optional, default to 400)
+        Chart height in pixels.
+
+    title: str (optional)
+        Chart title.
+
+    legend: enum[left, right, none] (optional, default to left)
+        Chart legend setting.
+
+    Returns
+    -------
+    line_chart: altair.Chart
+        The line chart plotted.
+    """
     if ys == None and len(yLeft) == 0 and len(yRight) == 0:
         raise "Must define ys, yLeft, or yRight"
 
