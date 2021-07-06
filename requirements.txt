@@ -29,7 +29,6 @@ docopt==0.6.2
 docutils==0.17.1
 dominate==2.6.0
 entrypoints==0.3
--e git+git@github.com:scout-cool/streamlit_flow.git@5af137e62d844f35080ad1e0ccfe7de8f09b9f5b#egg=example_pkg_earlgrey
 face==20.1.1
 filelock==3.0.12
 furl==2.1.2
