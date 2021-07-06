@@ -39,7 +39,7 @@ st.write(data1)
 plot_line(
     data1,
     x={"field": "round", "title": "Round"},
-    yLeft=[
+    ys=[
         {
             "field": "amount",
             "title": "Amount",
@@ -53,7 +53,7 @@ st.write(data2)
 plot_line(
     data2,
     x={"field": "round", "title": "Round"},
-    yLeft=[
+    ys=[
         {
             "field": "amount",
             "title": "Amount",
@@ -101,7 +101,7 @@ plot_line(
     x={
         "field": "timestamp",
     },
-    yLeft=[
+    ys=[
         {
             "field": "amount",
             "title": "Amount",
@@ -116,7 +116,7 @@ plot_line(
     x={
         "field": "timestamp",
     },
-    yLeft=[
+    ys=[
         {
             "field": "amount",
             "title": "Amount",

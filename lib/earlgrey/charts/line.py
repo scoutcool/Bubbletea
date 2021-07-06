@@ -1,9 +1,8 @@
-from altair.utils.schemapi import Undefined
-from altair.vegalite.v4.schema.channels import Opacity
+import datetime
 import streamlit as st
 import altair as alt
-from pandas import DataFrame
-from functools import reduce
+from pandas import DataFrame, DatetimeIndex, to_datetime, to_numeric
+from pandas.api.types import is_numeric_dtype
 
 PALETTE = [
     "#FF3333",
@@ -37,22 +36,136 @@ DEFAULT_Y: alt.Y = {
 }
 
 
+@st.cache
+def get_min_max_date():
+    # valid date time is today +/- 20 years
+    return [
+        int((datetime.datetime.now() - datetime.timedelta(days=20 * 365)).timestamp()),
+        int((datetime.datetime.now() + datetime.timedelta(days=20 * 365)).timestamp()),
+    ]
+
+
+[MIN_DATETIME, MAX_DATETIME] = get_min_max_date()
+
+
+def is_large(df: DataFrame):
+    return df.apply(lambda c: int(c) > 1e5).any()
+
+
+def is_too_large(df: DataFrame):
+    return df.apply(lambda c: int(c) > 1e12).any()
+
+
+def process_field(df: DataFrame, fieldName: str):
+    column = df[fieldName]
+    original_dtype = column.dtype
+
+    if original_dtype == "object":
+        try_numerify = column.apply(lambda s: to_numeric(s, errors="coerce"))
+        if try_numerify.notnull().all():
+            column = try_numerify
+
+    if is_numeric_dtype(column):
+        axis_config = {
+            "format": ".2f",
+        }
+
+        if is_large(column):
+            axis_config = {
+                "format": ".2s",
+                "labelExpr": "replace(datum.label, 'G', 'B')",
+            }
+
+        if is_too_large(column):
+            axis_config = {
+                "format": ".2e",
+            }
+
+        if (column < MIN_DATETIME).any() or (column > MAX_DATETIME).any():
+            return [
+                column,
+                {"type": "quantitative", "axis": axis_config},
+            ]
+
+    try:
+        col_as_datetime = to_datetime(column, errors="raise", unit="s")
+        return [
+            col_as_datetime,
+            {"type": "temporal", "axis": {"format": "%b %d"}},
+        ]
+    except:
+        print("cannot convert to date")
+
+    return [column, {"type": "nominal", "axis": {}}]
+
+
+def guess_x_config(x: alt.X, df: DataFrame):
+    [col, guessed_x_config] = process_field(df, x["field"])
+    df[x["field"]] = col
+
+    axis_config = guessed_x_config["axis"]
+    del guessed_x_config["axis"]
+
+    return {
+        "config": {
+            # base: default
+            **DEFAULT_X,
+            # guess field type
+            **guessed_x_config,
+            # input should override heuristics when available
+            **x,
+        },
+        "axis": axis_config,
+    }
+
+
+def guess_y_config(y: alt.Y, df: DataFrame):
+    [col, guessed_y_config] = process_field(df, y["field"])
+    df[y["field"]] = col
+
+    axis_config = guessed_y_config["axis"]
+    del guessed_y_config["axis"]
+
+    return {
+        "config": {
+            # base: default
+            **DEFAULT_Y,
+            # guess field type
+            **guessed_y_config,
+            # input should override heuristics when available
+            **y,
+        },
+        "axis": axis_config,
+    }
+
+
 def plot(
     df: DataFrame,
     x: alt.X = DEFAULT_X,
+    ys: "list[alt.Y]" = None,
     yLeft: "list[alt.Y]" = [],
     yRight: "list[alt.Y]" = [],
     palette=PALETTE,
     height: int = 400,
-    timeFormat="%b %d",
     title: str = None,
-    legend="right",  # could be 'left', 'right', 'none'
+    legend="right",  # could be 'left', 'right', 'none',
 ):
+    if ys == None and len(yLeft) == 0 and len(yRight) == 0:
+        raise "Must define ys, yLeft, or yRight"
+
+    if ys != None and len(ys) != 0:
+        yLeft = ys
+
+    is_dual_y = len(yLeft) > 0 and len(yRight) > 0
+
     frames = df.reset_index()
 
-    x_config = {**DEFAULT_X, **x}
-    ys_config_left = list(map(lambda y: {**DEFAULT_Y, **y}, yLeft))
-    ys_config_right = list(map(lambda y: {**DEFAULT_Y, **y}, yRight))
+    guessed_x_config = guess_x_config(x, frames)
+    x_config = guessed_x_config["config"]
+    x_axis_config = guessed_x_config["axis"]
+
+    ys_config_left = list(map(lambda y: guess_y_config(y, frames), yLeft))
+    ys_config_right = list(map(lambda y: guess_y_config(y, frames), yRight))
     ys_config_all = ys_config_left + ys_config_right
 
     if title != None:
@@ -64,8 +177,8 @@ def plot(
         x_config["field"] = x_config["title"]
         del x_config["title"]
     for yc in ys_config_all:
-        if "title" in yc:
-            frames[yc["title"]] = frames[yc["field"]]
+        if "title" in yc["config"]:
+            frames[yc["config"]["title"]] = frames[yc["config"]["field"]]
 
     # Create a selection that chooses the nearest point & selects based on x-value
     hover_selection = alt.selection(
@@ -76,7 +189,10 @@ def plot(
         empty="none",
     )
     click_selection = alt.selection_multi(
-        nearest=True, on="click", fields=[x_config["field"]], empty="none"
+        # nearest=True,
+        on="click",
+        fields=[x_config["field"]],
+        empty="none",
     )
 
     # Draw a rule at the location of the selection
@@ -84,13 +200,19 @@ def plot(
         alt.Chart(frames)
         .mark_rule(color=palette[0])
         .encode(
-            x=alt.X(**x_config),
+            x=alt.X(
+                **x_config,
+                axis=alt.Axis(
+                    **x_axis_config,
+                ),
+            ),
             opacity=alt.condition(hover_selection, alt.value(1), alt.value(0)),
             tooltip=[
                 x_config["field"],
                 *list(
                     map(
-                        lambda y_config: y_config["title"] or y_config["field"],
+                        lambda y_config: y_config["config"]["title"]
+                        or y_config["config"]["field"],
                         ys_config_all,
                     )
                 ),
@@ -104,13 +226,19 @@ def plot(
         alt.Chart(frames)
         .mark_rule(color=palette[0])
         .encode(
-            x=alt.X(**x_config),
+            x=alt.X(
+                **x_config,
+                axis=alt.Axis(
+                    **x_axis_config,
+                ),
+            ),
             opacity=alt.condition(click_selection, alt.value(1), alt.value(0)),
             tooltip=[
                 x_config["field"],
                 *list(
                     map(
-                        lambda y_config: y_config["title"] or y_config["field"],
+                        lambda y_config: y_config["config"]["title"]
+                        or y_config["config"]["field"],
                         ys_config_all,
                     )
                 ),
@@ -119,7 +247,7 @@ def plot(
         .transform_filter(click_selection)
     )
 
-    def _get_line_chart(columnDef: alt.Y, index: int, orient="left"):
+    def _get_line_chart(columnDef: alt.Y, axisDef: alt.Axis, index: int, orient="left"):
         column_label = columnDef["field"] + "-label"
         frames[column_label] = columnDef["title"] or columnDef["field"]
         color = palette[index + 1]
@@ -127,22 +255,21 @@ def plot(
         base = alt.Chart(frames).encode(
             alt.X(
                 title="",
-                axis=alt.Axis(
-                    values=frames[x_config["field"]].tolist(),
-                    format=timeFormat,
-                    domain=False,
-                    grid=False,
-                ),
                 # scale=alt.Scale(nice={"interval": "day", "step": 1}),
                 **x_config,
+                axis=alt.Axis(
+                    # values=frames[x_config["field"]].tolist(),
+                    domain=False,
+                    grid=False,
+                    **x_axis_config,
+                ),
             ),
             alt.Y(
                 axis=alt.Axis(
-                    format=".2s",
                     titleColor=alt.Value(color),
-                    labelExpr="replace(datum.label, 'G', 'B')",
-                    grid=False,
+                    grid=(not is_dual_y),
                     orient=orient,
+                    **axisDef,
                 ),
                 **columnDef,
             ),
@@ -190,7 +317,7 @@ def plot(
 
     if len(yLeft) > 0:
         for i, y in enumerate(ys_config_left):
-            chart_result = _get_line_chart(y, i)
+            chart_result = _get_line_chart(y["config"], y["axis"], i)
             charts["yLeft"].append(chart_result["line"])
             annotations["yLeft"] += chart_result["annotations"]
 
@@ -200,7 +327,9 @@ def plot(
 
     if len(yRight) > 0:
         for i, y in enumerate(ys_config_right):
-            chart_result = _get_line_chart(y, i + len(ys_config_left), "right")
+            chart_result = _get_line_chart(
+                y["config"], y["axis"], i + len(ys_config_left), "right"
+            )
             charts["yRight"].append(chart_result["line"])
             annotations["yRight"] += chart_result["annotations"]
 
