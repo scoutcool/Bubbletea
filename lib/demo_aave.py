@@ -1,30 +1,14 @@
-import math
 import altair as alt
-import numpy as np
 from earlgrey.thegraph import thegraph_loader as gl
 from earlgrey.transformers import timeseries as ts
 from earlgrey import crypto_compare as cp
 from earlgrey.charts.line import plot as plot_line
-from pandas.core.frame import DataFrame
 import streamlit as st
-import pandas as pd
 import datetime
 import time
 import os
 
 from flash_card import flash_card
-from dotenv import load_dotenv
-load_dotenv()
-
-alt.renderers.set_embed_options(actions=False)
-
-st.markdown(
-    """ <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    </style> """,
-    unsafe_allow_html=True,
-)
 
 CP_API_TOKEN = os.environ.get("cp_api_token")
 TOKENS = ["AAVE", "ETH", "USDC", "WBTC"]

@@ -4,8 +4,8 @@ from earlgrey.charts import line as l
 from earlgrey import crypto_compare as cp
 from earlgrey.transformers import timeseries as ts
 
-start_timestamp = 1609459200
-end_timestamp = 1610236800
+start_timestamp = 1609459200    #2021-01-01 UTC
+end_timestamp = 1610236800      #2021-01-10 UTC
 
 CP_API_TOKEN = "163b4f02ba446862200ecf7a64c3359b6d6bcf9d417aa27a0b5b29c9f9e619be"  # os.environ.get("cp_api_token")
 pricing_df = cp.load_historical_data(
@@ -17,7 +17,7 @@ url_aave_subgraph = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
 query_aave = """
 {
     deposits(
-        where:{timestamp_gt:%s, timestamp_lt:%s}
+        where:{timestamp_gte:%s, timestamp_lt:%s}
         orderBy: timestamp
         orderDirection: asc
         bypassPagination: true

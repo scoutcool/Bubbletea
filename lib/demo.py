@@ -1,16 +1,30 @@
 import streamlit as st
+import altair as alt
 
 import os
 
+from dotenv import load_dotenv
+load_dotenv()
+
 st.set_page_config(page_title='Earlgrey Demos', page_icon=':coin:', layout='wide', initial_sidebar_state='collapsed')
 st.sidebar.title(":hot_pepper: Demos")
+
+alt.renderers.set_embed_options(actions=False)
+
+st.markdown(
+    """ <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style> """,
+    unsafe_allow_html=True,
+)
 
 with st.beta_expander("About Earlgrey"):
     with open('README.md', 'r') as file:
         intro = file.read()
         st.markdown(intro)
 
-display, editor = st.beta_columns((1, 1))
+display, editor = st.beta_columns((2, 1))
 
 
 selected_demo = None
