@@ -64,12 +64,16 @@ query = """
 )
 
 with st.spinner("Loading data from the graph"):
-    data = gl.load_subgraph(subgraph_url, query)
+    data = gl.load_subgraph(subgraph_url, query, astypes=[
+        gl.FieldConfig(name='timestamp', type='datetime', unit='s'),
+        gl.FieldConfig(name='round', type='int32'),
+        gl.FieldConfig(name='amount', type='float')
+    ])
 
-df_bond = pd.json_normalize(data["data"]["bondEvents"])
+df_bond = data["data"]["bondEvents"]
 df_bond.rename(columns={"bondedAmount": "amount"}, inplace=True)
-df_rebond = pd.json_normalize(data["data"]["rebondEvents"])
-df_unbond = pd.json_normalize(data["data"]["unbondEvents"])
+df_rebond = data["data"]["rebondEvents"]
+df_unbond = data["data"]["unbondEvents"]
 for df in [df_bond, df_rebond, df_unbond]:
     df["amount"] = df["amount"].apply(lambda x: float(x))
 df_amount = (
@@ -118,9 +122,6 @@ df_amount_over_round = ts.aggregate_groupby(
             na_fill_value=0.0,
         )
     ],
-)
-st.warning(
-    "todo: Numbers are treated as timestamp. Pending https://app.asana.com/0/0/1200542653753233/f"
 )
 df_amount_over_round.index.names = ["round"]
 st.write(df_amount_over_round)

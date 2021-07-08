@@ -88,20 +88,14 @@ query = """
     end_timestamp,
 )
 
-
 def get_rates_df(symbol, start_timestamp, end_timestamp):
-    pricing = cp.load_historical_data(
+    df = cp.load_historical_data(
         symbol, "USD", start_timestamp, end_timestamp, CP_API_TOKEN, 2000
     )
-    rates = []
-    for p in pricing:
-        rates.append({"rate": p["close"], "time": pd.to_datetime(p["time"], unit="s")})
-    return DataFrame(rates).set_index("time")
-
+    df['rate'] = df['close']
+    return df.set_index('time')
 
 placeholder = st.empty()
-
-
 def on_deposits_progress(obj):
     msg = f"{obj['count']} {obj['entity']} loaded."
     placeholder.text(msg)

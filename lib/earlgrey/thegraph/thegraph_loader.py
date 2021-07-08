@@ -13,12 +13,19 @@ from graphql import parse, print_ast, ArgumentNode, NameNode, IntValueNode, Fiel
 
 
 ITEMS_PER_PAGE = 1000
+class FieldConfig:
+    def __init__(self, name:str, type:str, unit='s') -> None:
+        self.name = name
+        self.type = type
+        self.unit = unit
+
 class SubgraphDef:
     url: str
     query: str
-    def __init__(self, url:str, query:str) -> None:
+    def __init__(self, url:str, query:str, astypes:list[FieldConfig] = None) -> None:
         self.url = url
         self.query = query
+        self.astypes = astypes
 
 class TheGraphEntity:
     def __init__(self, node) -> None:
@@ -92,11 +99,6 @@ class TheGraphEntity:
     def __repr__(self):
         return str(self) 
 
-class FieldConfig:
-    def __init__(self, name:str, type:str, unit='s') -> None:
-        self.name = name
-        self.type = type
-        self.unit = unit
 
 def _parse_thegraph_query(queryTemplate):
     ast = parse(queryTemplate, no_location=True)
@@ -235,7 +237,7 @@ Return:
 def load_subgraphs(defs:'list[SubgraphDef]'):
     results = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(defs)) as executor:
-        future_to_url = {executor.submit(load_subgraph, d.url, d.query) for d in defs}
+        future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.astypes) for d in defs}
         for thread in executor._threads:
             add_report_ctx(thread)
 
@@ -243,6 +245,6 @@ def load_subgraphs(defs:'list[SubgraphDef]'):
             try:
                 data = future.result()
                 results[data['url']] = data['data']
-            except Exception as exc:
+            except Exception as e:
                 st.exception(e)
     return results
