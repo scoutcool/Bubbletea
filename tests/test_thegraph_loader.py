@@ -25,52 +25,84 @@ query_aave = """
         amount
         timestamp
     }
-    # flashLoans(
-    #     orderBy: timestamp
-    #     orderDirection: asc
-    #     first:3
-    # ){
-    #     amount
-    #      timestamp
-    #  }
+    flashLoans(
+        orderBy: timestamp
+        orderDirection: asc
+        first:3
+    ){
+        amount
+         timestamp
+     }
 }
 """
-data = gl.load_subgraph(url_aave_subgraph, query_aave, 
-    astypes=[
-        gl.FieldConfig(name='amount', type='float'),
-        gl.FieldConfig(name='timestamp', type='datetime'),
-        gl.FieldConfig(name='reserve.decimals', type='int'),
-        gl.FieldConfig(name='random', type='int')
-        ]
-    )
-df = data['data']['deposits']
-df = df.astype({'amount':'float'}, copy=False)
-print(df.dtypes)
-# print(data['data'].dtypes)
+# data = gl.load_subgraph(url_aave_subgraph, query_aave, 
+#     astypes=[
+#         gl.FieldConfig(name='amount', type='float'),
+#         gl.FieldConfig(name='timestamp', type='datetime'),
+#         gl.FieldConfig(name='reserve.decimals', type='int'),
+#         gl.FieldConfig(name='random', type='int')
+#         ]
+#     )
+
+
+url_compoundv2_subgraph = 'https://api.thegraph.com/subgraphs/name/graphprotocol/compound-v2'
+query_compoundv2 = """
+{
+	mintEvents(
+        where:{blockTime_gte:1609459200, blockTime_lt:1609462800}
+        bypassPagination: true
+    ) {
+	    cTokenSymbol
+        amount
+        underlyingAmount
+	}
+}
+"""
+# data = gl.load_subgraph(url_compoundv2_subgraph, query_compoundv2, 
+#     astypes=[
+#         gl.FieldConfig(name='amount', type='float'),
+#         gl.FieldConfig(name='underlyingAmount', type='float')
+#         ]
+#     )
+
+
+# data = data['data']
 # for k in data.keys():
-    # print(data[k])
-    # st.subheader(k)
-    # st.write(data[k])
-
-# url_compoundv2_subgraph = 'https://api.thegraph.com/subgraphs/name/graphprotocol/compound-v2'
-# query_compoundv2 = """
-# {
-# 	mintEvents(
-#         where:{blockTime_gte:1609459200, blockTime_lt:1609462800}
-#         bypassPagination: true
-#     ) {
-# 	    cTokenSymbol
-#         amount
-#         underlyingAmount
-# 	}
-# }
-# """
-
-# data = gl.load_subgraphs([gl.SubgraphDef(url=url_aave_subgraph, query=query_aave), gl.SubgraphDef(url=url_compoundv2_subgraph,query=query_compoundv2)])
-# print(data)
-
-# for k in data.keys():
-#     st.subheader(k)
+#     st.markdown('---')
+#     st.markdown(f'### {k}')
+#     st.markdown('#### Data')
 #     st.write(data[k])
+#     st.markdown('#### Column Types')
+#     st.write(data[k].dtypes)
 
-# # st.write("hello world")
+data = gl.load_subgraphs([
+    # gl.SubgraphDef(
+    #     url=url_aave_subgraph, 
+    #     query=query_aave,
+    #     astypes=[
+    #           gl.FieldConfig(name='amount', type='float'),
+    #           gl.FieldConfig(name='timestamp', type='datetime'),
+    #           gl.FieldConfig(name='reserve.decimals', type='int')
+    #         ]
+    #     ), 
+    gl.SubgraphDef(
+        url=url_compoundv2_subgraph,
+        query=query_compoundv2,
+        astypes=[
+              gl.FieldConfig(name='amount', type='float'),
+              gl.FieldConfig(name='underlyingAmount', type='float')
+            ]
+        )
+    ])
+
+for k in data.keys():
+    st.subheader(k)
+    subgraph = data[k]
+    for e in subgraph.keys():
+        st.markdown(f'### {e}')
+        df = subgraph[e]
+        st.markdown('#### Data')
+        st.write(df)
+        st.markdown('#### Column Types')
+        st.write(df.dtypes)
+        # print(df.dtypes)

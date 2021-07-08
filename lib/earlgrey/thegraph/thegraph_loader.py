@@ -20,11 +20,10 @@ class FieldConfig:
         self.unit = unit
 
 class SubgraphDef:
-    url: str
-    query: str
-    def __init__(self, url:str, query:str, astypes:list[FieldConfig] = None) -> None:
+    def __init__(self, url:str, query:str, progressCallback=None, astypes:list[FieldConfig] = None) -> None:
         self.url = url
         self.query = query
+        self.progressCallback = progressCallback
         self.astypes = astypes
 
 class TheGraphEntity:
@@ -163,9 +162,6 @@ def _load_subgraph_per_entity(url, e:TheGraphEntity, progressCallback, astypes):
     if(e.bypassPagination):
         data = _load_subgraph_per_entity_all_pages(url, e, progressCallback)
         df = _process_datatypes(data, astypes)
-        if astypes != None:
-            for col in astypes:
-                data
         if hasattr(e, 'orderBy'):
             ascending = True if hasattr(e, 'orderDirection') and e.orderDirection == 'asc' else False
             df.sort_values(by=[e.orderBy], ascending=ascending)
@@ -234,10 +230,10 @@ Return:
     }
 }
 """
-def load_subgraphs(defs:'list[SubgraphDef]'):
+def load_subgraphs(defs:list[SubgraphDef]):
     results = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(defs)) as executor:
-        future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.astypes) for d in defs}
+        future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.progressCallback, d.astypes) for d in defs}
         for thread in executor._threads:
             add_report_ctx(thread)
 
