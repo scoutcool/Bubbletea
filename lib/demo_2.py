@@ -8,11 +8,12 @@ import os
 start_timestamp = 1609459200
 end_timestamp = 1610236800
 
-CP_API_TOKEN = "163b4f02ba446862200ecf7a64c3359b6d6bcf9d417aa27a0b5b29c9f9e619be"#os.environ.get("cp_api_token")
-pricing = cp.load_historical_data("AAVE", "USD", start_timestamp, end_timestamp, CP_API_TOKEN, 2000)
+CP_API_TOKEN = "163b4f02ba446862200ecf7a64c3359b6d6bcf9d417aa27a0b5b29c9f9e619be"  # os.environ.get("cp_api_token")
+pricing = cp.load_historical_data(
+    "AAVE", "USD", start_timestamp, end_timestamp, CP_API_TOKEN, 2000
+)
 pricing_df = pd.json_normalize(pricing)
-pricing_df = pricing_df[["time","close"]]
-print(pricing_df)
+
 
 url_aave_subgraph = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
 query_aave = """
@@ -41,15 +42,16 @@ data_hourly_df = ts.aggregate_timeseries(
     columns=[
         ts.ColumnConfig(
             name="amount",
+            type="float",
             aggregate_method=ts.AggregateMethod.SUM,
             type="float",
             na_fill_value=0.0,
         )
-    ]
+    ],
 )
 data_hourly_df = data_hourly_df.reset_index()
 data_hourly_df["amount"] = data_hourly_df["amount"].apply(lambda x: float(x)/1000000000000000000)
-print(data_hourly_df)
+#print(data_hourly_df)
 
 result = pd.concat([pricing_df, data_hourly_df], axis=1)
 print(result)
