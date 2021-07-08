@@ -1,9 +1,12 @@
+from pandas.core.tools.datetimes import to_datetime
 import streamlit as st
+import pandas as pd
 import numpy as np
 import requests
 import json
 
 import concurrent.futures
+from decimal import Decimal
 
 from streamlit.report_thread import add_report_ctx
 from graphql import parse, print_ast, ArgumentNode, NameNode, IntValueNode, FieldNode, SelectionSetNode, ObjectValueNode, StringValueNode, ObjectFieldNode, EnumValueNode
@@ -87,8 +90,14 @@ class TheGraphEntity:
         msg += '\n'
         return msg
     def __repr__(self):
-        return str(self)
-    
+        return str(self) 
+
+class FieldConfig:
+    def __init__(self, name:str, type:str, unit='s') -> None:
+        self.name = name
+        self.type = type
+        self.unit = unit
+
 def _parse_thegraph_query(queryTemplate):
     ast = parse(queryTemplate, no_location=True)
     if(len(ast.definitions) != 1):
@@ -108,7 +117,12 @@ def _load_subgraph_per_entity_per_page(entity_name, url, query, since):
     
     response = requests.post(url, json={'query': query})
     text = json.loads(response.text)
-    return text["data"][entity_name]
+    if 'data' in text:
+        return text["data"][entity_name]
+    elif 'errors' in text:
+        raise ValueError(text['errors'])
+    else:
+        raise ValueError(f'Unable to process data: {text}')
 
 def _load_subgraph_per_entity_all_pages(url, entity:TheGraphEntity, progressCallback):
     arr = []
@@ -128,34 +142,38 @@ def _load_subgraph_per_entity_all_pages(url, entity:TheGraphEntity, progressCall
         if(l == 0 or l < ITEMS_PER_PAGE or len(arr) >= entity.limit):
             break
     return arr
+def _process_datatypes(data, astypes):
+    df = pd.json_normalize(data)
+    if astypes != None:
+        c = {}
+        for t in astypes:
+            if t.name not in df.columns:
+                continue
+            if t.type == 'datetime':
+                df[t.name] = df[t.name].apply(lambda x: to_datetime(x, unit=t.unit))
+            else:
+                c[t.name] = t.type
+        df = df.astype(c, copy=False)
+    return df
 
-def _load_subgraph_per_entity(url, e:TheGraphEntity, progressCallback):
+def _load_subgraph_per_entity(url, e:TheGraphEntity, progressCallback, astypes):
+    df = None
     if(e.bypassPagination):
-        arr = _load_subgraph_per_entity_all_pages(url, e, progressCallback)
+        data = _load_subgraph_per_entity_all_pages(url, e, progressCallback)
+        df = _process_datatypes(data, astypes)
+        if astypes != None:
+            for col in astypes:
+                data
         if hasattr(e, 'orderBy'):
-            try:
-                reverse = False if hasattr(e, 'orderDirection') and e.orderDirection == 'desc' else True
-                try:
-                    arr.sort(key=lambda x: float(x[e.orderBy]), reverse=reverse)
-                except TypeError:
-                    try:
-                        arr.sort(key=lambda x: x[e.orderBy], reverse=reverse)
-                    except TypeError:
-                        a = 1
-                    a = 1
-
-            except KeyError:
-                a = 1
-        return {
-            'entity': e.name,
-            'data': arr
-        }
+            ascending = True if hasattr(e, 'orderDirection') and e.orderDirection == 'asc' else False
+            df.sort_values(by=[e.orderBy], ascending=ascending)
     else:
-        return {
-            'entity': e.name,
-            'data': _load_subgraph_per_entity_per_page(e.name, url, '{'+e.initialQuery+'}', None)
-        }
-
+        data = _load_subgraph_per_entity_per_page(e.name, url, '{'+e.initialQuery+'}', None)
+        df = _process_datatypes(data, astypes)
+    return {
+        'entity': e.name,
+        'data': df
+    }
 
 """
 Fetch data from a single subgraph, multiple entities are supported.
@@ -175,23 +193,23 @@ Return:
 ```
 
 """
-def load_subgraph(url, query, progressCallback=None):
+def load_subgraph(url, query, progressCallback=None, astypes=None):
     entities = _parse_thegraph_query(query)
     results = {}
 
     # https://stackoverflow.com/questions/2632520/what-is-the-fastest-way-to-send-100-000-http-requests-in-python
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(entities)) as executor:
-        future_to_url = {executor.submit(_load_subgraph_per_entity, url, e, progressCallback) for e in entities}
+        future_to_url = {executor.submit(_load_subgraph_per_entity, url, e, progressCallback, astypes) for e in entities}
         for thread in executor._threads:
             add_report_ctx(thread)
 
         for future in concurrent.futures.as_completed(future_to_url):
-            try:
-                data = future.result()
-                results[data['entity']] = data['data']
-            except Exception as exc:
-                print('exception!! ')
-                print(exc)
+            # try:
+            data = future.result()
+            results[data['entity']] = data['data']
+            # except Exception as exc:
+            #     print('exception!! ')
+            #     print(exc)
     return {
         'url': url,
         'data': results

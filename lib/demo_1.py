@@ -25,10 +25,9 @@ query_aave = """
 )
 
 data = gl.load_subgraph(url_aave_subgraph, query_aave)
-data = pd.json_normalize(data["data"]["deposits"])
 
 l.plot(
-    data,
+    data["data"]["deposits"],
     x={"title": "Time", "field": "timestamp"},
     ys=[{"title": "Amount", "field": "amount"}],
 )
