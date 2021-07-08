@@ -87,10 +87,21 @@ def process_field(df: DataFrame, fieldName: str):
                 {"type": "quantitative", "axis": axis_config},
             ]
 
+        try:
+            timestamp_col_as_datetime = to_datetime(column, errors="raise", unit="s")
+            return [
+                timestamp_col_as_datetime,
+                {"type": "temporal", "axis": {"format": "%b %d"}},
+            ]
+        except:
+            print("cannot convert to date")
+
     try:
-        col_as_datetime = to_datetime(column, errors="raise", unit="s")
+        general_col_as_datetime = to_datetime(
+            column, errors="raise", infer_datetime_format=True
+        )
         return [
-            col_as_datetime,
+            general_col_as_datetime,
             {"type": "temporal", "axis": {"format": "%b %d"}},
         ]
     except:
