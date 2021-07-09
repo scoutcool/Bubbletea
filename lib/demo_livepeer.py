@@ -2,7 +2,7 @@ import datetime
 import streamlit as st
 import time
 import pandas as pd
-import earlgrey.thegraph.thegraph_loader as gl
+import earlgrey.thegraph.loader as gl
 import earlgrey.transformers.timeseries as ts
 from earlgrey.charts.line import plot as plot_line
 
@@ -66,12 +66,11 @@ query = """
 with st.spinner("Loading data from the graph"):
     data = gl.load_subgraph(subgraph_url, query)
 
-df_bond = pd.json_normalize(data["data"]["bondEvents"])
+df_bond = data["data"]["bondEvents"]
 df_bond.rename(columns={"bondedAmount": "amount"}, inplace=True)
-df_rebond = pd.json_normalize(data["data"]["rebondEvents"])
-df_unbond = pd.json_normalize(data["data"]["unbondEvents"])
-for df in [df_bond, df_rebond, df_unbond]:
-    df["amount"] = df["amount"].apply(lambda x: float(x))
+df_rebond = data["data"]["rebondEvents"]
+df_unbond = data["data"]["unbondEvents"]
+
 df_amount = (
     df_bond[["timestamp", "amount", "round.id"]]
     .append(df_rebond[["timestamp", "amount", "round.id"]])
@@ -106,7 +105,7 @@ plot_line(
     ],
 )
 
-st.subheader("Stake moved over rounds")
+# st.subheader("Stake moved over rounds")
 df_amount_over_round = ts.aggregate_groupby(
     df_amount,
     by_column="round.id",
@@ -119,14 +118,12 @@ df_amount_over_round = ts.aggregate_groupby(
         )
     ],
 )
-st.warning(
-    "todo: Numbers are treated as timestamp. Pending https://app.asana.com/0/0/1200542653753233/f"
-)
 df_amount_over_round.index.names = ["round"]
 st.write(df_amount_over_round)
 plot_line(
     df_amount_over_round,
-    x={"field": "round", "title": "Round"},
+    title='Stake moved over rounds',
+    x={"field": "round", "title": "Round", "type":"ordinal"},# ['quantitative', 'ordinal', 'temporal', 'nominal']
     yLeft=[
         {
             "field": "amount",
