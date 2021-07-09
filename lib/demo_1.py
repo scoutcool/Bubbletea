@@ -16,6 +16,9 @@ query_aave = """
     ) {
         amount
         timestamp
+        reserve{
+            symbol
+        }
     }
 }
 """ % (
@@ -25,7 +28,7 @@ query_aave = """
 
 df = gl.load_subgraph(url_aave_subgraph, query_aave)
 df = df["data"]["deposits"]
-df['amount'] = df["amount"] / math.pow(10, 18)
+aave_df = df[df['reserve.symbol'] == 'AAVE'] 
 
 l.plot(
     title='AAVE Deposits',
