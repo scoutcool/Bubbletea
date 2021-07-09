@@ -2,14 +2,11 @@ import math
 from earlgrey.thegraph import loader as gl
 from earlgrey.charts import line as l
 
-start_timestamp = 1609459200 #Jan 1st, 2021
-end_timestamp = 1610236800 #Jan 10th, 2021
-
 url_aave_subgraph = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
 query_aave = """
 {
     deposits(
-        where:{timestamp_gt:%s, timestamp_lt:%s}
+        where:{timestamp_gt:1609459200, timestamp_lt:1610236800}
         orderBy: timestamp
         orderDirection: asc
         bypassPagination: true
@@ -18,10 +15,7 @@ query_aave = """
         timestamp
     }
 }
-""" % (
-    start_timestamp,
-    end_timestamp,
-)
+"""
 
 #Load data from Aave subgraph
 df = gl.load_subgraph(url_aave_subgraph, query_aave)
