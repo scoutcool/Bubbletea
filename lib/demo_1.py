@@ -13,6 +13,10 @@ query_aave = """
     ) {
         amount
         timestamp
+        reserve {
+            symbol
+            decimals
+        }
     }
 }
 """
@@ -21,6 +25,8 @@ query_aave = """
 df = gl.load_subgraph(url_aave_subgraph, query_aave)
 df = df["data"]["deposits"]
 
+#Only show deposits with AAVE tokens
+df = df[df['reserve.symbol'] == 'AAVE'] 
 #Convert token amount with 18 decimals
 df['amount'] = df["amount"] / math.pow(10, 18)
 
