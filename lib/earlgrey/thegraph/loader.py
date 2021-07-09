@@ -143,9 +143,9 @@ class SubgraphLoader:
         if self.types == None:
             self.types = self.__load_schema()
         df = pd.json_normalize(data)
-        en = entity.name.title()
+        en = entity.name
         if en.endswith('s'):
-            en = en[0:len(en) - 1]
+            en = f"{en[0:1].upper()}{en[1:len(en) - 1]}"
 
         columns = df.columns
         astypes = {}
@@ -153,12 +153,16 @@ class SubgraphLoader:
             path = f"{en}.{c}"
             t = schema_utils.find_column_type(path, self.types)
             dt = df.dtypes[c]
-            # print(f"column {c}\t{t}\t{df.dtypes[c]}")
             if t == None:
                 continue
             t = t.lower()
             if t in ['int']:
-                if dt != 'int64':
+                if dt == 'int64':
+                    timestamp_matched = df[(1500000000 <= df[c]) & (df[c] <= 1800000000)]
+                    if len(timestamp_matched) == len(df):
+                        df[c] = df[c].apply(lambda x: pd.to_datetime(x, unit='s'))
+                    pass
+                else:
                     timestamp_matched = df[df[c].str.match(schema_utils.REGEX_TIMESTAMP) == True]
                     if len(timestamp_matched) == len(df):
                         df[c] = df[c].apply(lambda x: pd.to_datetime(x, unit='s'))
