@@ -1,29 +1,14 @@
 import altair as alt
-from earlgrey.thegraph import thegraph_loader as gl
+from earlgrey.thegraph import loader as gl
 from earlgrey.transformers import timeseries as ts
 from earlgrey import crypto_compare as cp
 from earlgrey.charts.line import plot as plot_line
-from pandas.core.frame import DataFrame
 import streamlit as st
-import pandas as pd
-import math
 import datetime
 import time
 import os
 
 from flash_card import flash_card
-# from dotenv import load_dotenv
-# load_dotenv()
-
-alt.renderers.set_embed_options(actions=False)
-
-st.markdown(
-    """ <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    </style> """,
-    unsafe_allow_html=True,
-)
 
 CP_API_TOKEN = os.environ.get("cp_api_token")
 TOKENS = ["AAVE", "ETH", "USDC", "WBTC"]
@@ -76,7 +61,6 @@ query = """
     ) {
         reserve {
             symbol,
-            name,
             decimals
         }
         amount
@@ -88,47 +72,31 @@ query = """
     end_timestamp,
 )
 
-
 def get_rates_df(symbol, start_timestamp, end_timestamp):
-    pricing = cp.load_historical_data(
+    df = cp.load_historical_data(
         symbol, "USD", start_timestamp, end_timestamp, CP_API_TOKEN, 2000
     )
-    rates = []
-    for p in pricing:
-        rates.append({"rate": p["close"], "time": pd.to_datetime(p["time"], unit="s")})
-    return DataFrame(rates).set_index("time")
-
+    df['rate'] = df['close']
+    return df.set_index('time')
 
 placeholder = st.empty()
-
-
 def on_deposits_progress(obj):
     msg = f"{obj['count']} {obj['entity']} loaded."
     placeholder.text(msg)
 
 
-@st.cache(show_spinner=False)
 def get_token_deposits():
     data = gl.load_subgraph(subgraph_url, query, on_deposits_progress)
-    deposits = data["data"]["deposits"]
-    _eth_deposits = []
-    for d in deposits:
-        if d["reserve"]["symbol"] == token_symbol:
-            _eth_deposits.append(
-                {
-                    "amount": float(d["amount"])
-                    / math.pow(10, int(d["reserve"]["decimals"])),
-                    "time": d["timestamp"],
-                }
-            )
-    return _eth_deposits
-
+    df = data["data"]["deposits"]
+    df = df[df['reserve.symbol'] == token_symbol] #Filter rows where reserve.symbol == selected symbol
+    df['amount'] = df['amount'] / (10 ** df['reserve.decimals'])
+    return df
 
 @st.cache(show_spinner=False)
-def process_deposits(deposits, df_rates):
+def process_deposits(df_deposits, df_rates):
     df_hourly = ts.aggregate_timeseries(
-        data=deposits,
-        time_column="time",
+        data=df_deposits,
+        time_column="timestamp",
         interval=ts.TimeseriesInterval.HOURLY,
         columns=[
             ts.ColumnConfig(
@@ -141,11 +109,12 @@ def process_deposits(deposits, df_rates):
 
     df_hourly = df_hourly.merge(df_rates, left_index=True, right_index=True)
     df_hourly["volume"] = df_hourly["amount"] * df_hourly["rate"]
+    df_hourly.index.names = ['timestamp']
     result = {}
 
     df = ts.aggregate_timeseries(
         data=df_hourly,
-        time_column="time",
+        time_column="timestamp",
         interval=interval,
         columns=[
             ts.ColumnConfig(
@@ -176,10 +145,10 @@ with st.spinner("Loading and processing rates data"):
     df_rates = get_rates_df(token_symbol_cp, start_timestamp, end_timestamp)
 
 with st.spinner("Loading deposits data"):
-    deposits = get_token_deposits()
+    df_deposits = get_token_deposits()
 
 with st.spinner("Loading and aggregating deposit data"):
-    dfs = process_deposits(deposits, df_rates)
+    dfs = process_deposits(df_deposits, df_rates)
     # print(df_rates)
     for p in dfs.keys():
         df = dfs[p]
@@ -187,33 +156,21 @@ with st.spinner("Loading and aggregating deposit data"):
         plot_line(
             df,
             title=p,
-            x={"field": "time", "title": "Time"},
+            x={"field": "timestamp", "title": "Time"},
             yLeft=[
                 {
                     "field": "amount",
                     "title": "Amount",
                 },
+                
             ],
-            yRight=[
-                {
-                    "field": "volume",
-                    "title": "Volume",
-                },
-            ],
-            legend="left",
-        )
-
-        plot_line(
-            df,
-            height=200,
-            x={"field": "time", "title": "Time"},
             yRight=[
                 {
                     "field": "rate",
                     "title": "Rate",
                 },
             ],
-            legend="none",
+            legend="right",
         )
 
         if len(df) > 1:

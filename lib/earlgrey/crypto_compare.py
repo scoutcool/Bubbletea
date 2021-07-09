@@ -1,7 +1,9 @@
+from pandas.core.tools.datetimes import to_datetime
 import streamlit as st
 import math
 import requests
 import json
+import pandas as pd
 
 @st.cache(show_spinner=False)
 def _load_historical_data(from_symbol:str, to_symbol:str, etime:int, limit:int, apikey:str):
@@ -36,6 +38,7 @@ def load_historical_data(from_symbol:str, to_symbol:str, start_timestamp:int, en
         rates.extend(rs)
         limit -= apilimit
         et = st
-    
-    rates.sort(key=lambda x: float(x['time']), reverse=False)
-    return rates
+    df = pd.json_normalize(rates)
+    df['time'] = df['time'].apply(lambda x: to_datetime(x, unit='s'))
+    df.sort_values(by=['time'], ascending=True)
+    return df

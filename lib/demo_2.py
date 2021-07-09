@@ -1,31 +1,33 @@
-from earlgrey.thegraph import thegraph_loader as gl
-import pandas as pd
+from earlgrey.thegraph import loader as gl
 from earlgrey.charts import line as l
 from earlgrey import crypto_compare as cp
 from earlgrey.transformers import timeseries as ts
 import os
 
-start_timestamp = 1609459200
-end_timestamp = 1610236800
+start_timestamp = 1609459200    #2021-01-01 UTC
+end_timestamp = 1610236800      #2021-01-10 UTC
 
-CP_API_TOKEN = "163b4f02ba446862200ecf7a64c3359b6d6bcf9d417aa27a0b5b29c9f9e619be"  # os.environ.get("cp_api_token")
-pricing = cp.load_historical_data(
+CP_API_TOKEN = os.environ.get("cp_api_token")
+pricing_df = cp.load_historical_data(
     "AAVE", "USD", start_timestamp, end_timestamp, CP_API_TOKEN, 2000
 )
-pricing_df = pd.json_normalize(pricing)
 
 
 url_aave_subgraph = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
 query_aave = """
 {
     deposits(
-        where:{timestamp_gt:%s, timestamp_lt:%s}
+        where:{timestamp_gte:%s, timestamp_lt:%s}
         orderBy: timestamp
         orderDirection: asc
         bypassPagination: true
     ) {
         amount
         timestamp
+        reserve {
+            symbol
+            decimals
+        }
     }
 }
 """ % (
@@ -34,29 +36,28 @@ query_aave = """
 )
 
 data = gl.load_subgraph(url_aave_subgraph, query_aave)
-data = pd.json_normalize(data["data"]["deposits"])
-data_hourly_df = ts.aggregate_timeseries(
-    data,
+df = data["data"]["deposits"]
+aave_df = df[df['reserve.symbol'] == 'AAVE'] 
+aave_hourly_df = ts.aggregate_timeseries(
+    aave_df,
     time_column="timestamp",
     interval=ts.TimeseriesInterval.HOURLY,
     columns=[
         ts.ColumnConfig(
             name="amount",
-            type="float",
             aggregate_method=ts.AggregateMethod.SUM,
-            type="float",
             na_fill_value=0.0,
         )
     ],
 )
-data_hourly_df = data_hourly_df.reset_index()
-data_hourly_df["amount"] = data_hourly_df["amount"].apply(lambda x: float(x)/1000000000000000000)
-#print(data_hourly_df)
+aave_hourly_df["amount"] = aave_hourly_df["amount"] / 1000000000000000000
+# print(aave_hourly_df)
+result = aave_hourly_df.merge(pricing_df, left_index=True, right_on='time')
+# print(result)
 
-result = pd.concat([pricing_df, data_hourly_df], axis=1)
-print(result)
-
-l.plot(result, 
+l.plot(
+    title='Hourly AAVE Deposits vs Pricing',
+    df=result, 
     x={"title":"Time", "field":"time"},
     yLeft = [{"title":"Price", "field":"close"}],
     yRight= [{"title":"Amount", "field":"amount"}]
