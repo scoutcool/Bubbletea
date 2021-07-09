@@ -1,3 +1,4 @@
+import math
 from earlgrey.thegraph import loader as gl
 from earlgrey.charts import line as l
 
@@ -22,11 +23,13 @@ query_aave = """
     end_timestamp,
 )
 
-data = gl.load_subgraph(url_aave_subgraph, query_aave)
+df = gl.load_subgraph(url_aave_subgraph, query_aave)
+df = df["data"]["deposits"]
+df['amount'] = df["amount"] / math.pow(10, 18)
 
 l.plot(
     title='AAVE Deposits',
-    df=data["data"]["deposits"],
+    df=df,
     x={"title": "Time", "field": "timestamp"},
     ys=[{"title": "Amount", "field": "amount"}],
 )
