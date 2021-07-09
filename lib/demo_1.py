@@ -2,8 +2,8 @@ from earlgrey.thegraph import thegraph_loader as gl
 import pandas as pd
 from earlgrey.charts import line as l
 
-start_timestamp = 1609459200
-end_timestamp = 1610236800
+start_timestamp = 1609459200 #Jan 1st, 2021
+end_timestamp = 1610236800 #Jan 10th, 2021
 
 url_aave_subgraph = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
 query_aave = """
