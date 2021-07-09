@@ -23,11 +23,11 @@ query_aave = """
     end_timestamp,
 )
 
-#Load data from Aave subgraph#
+#Load data from Aave subgraph
 df = gl.load_subgraph(url_aave_subgraph, query_aave)
 df = df["data"]["deposits"]
 
-#Convert #
+#Convert token amount with 18 decimals
 df['amount'] = df["amount"] / math.pow(10, 18)
 
 #Draw the data on a line chart
