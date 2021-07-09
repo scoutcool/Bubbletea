@@ -4,7 +4,7 @@ print('hahaahaha')
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-import lib.earlgrey.thegraph.thegraph_loader as gl
+import lib.earlgrey.thegraph.loader as gl
 import streamlit as st
 
 
@@ -58,51 +58,51 @@ query_compoundv2 = """
 	}
 }
 """
-# data = gl.load_subgraph(url_compoundv2_subgraph, query_compoundv2, 
-#     astypes=[
-#         gl.FieldConfig(name='amount', type='float'),
-#         gl.FieldConfig(name='underlyingAmount', type='float')
-#         ]
-#     )
+data = gl.load_subgraph(url_compoundv2_subgraph, query_compoundv2, 
+    astypes=[
+        gl.FieldConfig(name='amount', type='float'),
+        gl.FieldConfig(name='underlyingAmount', type='float')
+        ]
+    )
 
 
-# data = data['data']
-# for k in data.keys():
-#     st.markdown('---')
-#     st.markdown(f'### {k}')
-#     st.markdown('#### Data')
-#     st.write(data[k])
-#     st.markdown('#### Column Types')
-#     st.write(data[k].dtypes)
-
-data = gl.load_subgraphs([
-    # gl.SubgraphDef(
-    #     url=url_aave_subgraph, 
-    #     query=query_aave,
-    #     astypes=[
-    #           gl.FieldConfig(name='amount', type='float'),
-    #           gl.FieldConfig(name='timestamp', type='datetime'),
-    #           gl.FieldConfig(name='reserve.decimals', type='int')
-    #         ]
-    #     ), 
-    gl.SubgraphDef(
-        url=url_compoundv2_subgraph,
-        query=query_compoundv2,
-        astypes=[
-              gl.FieldConfig(name='amount', type='float'),
-              gl.FieldConfig(name='underlyingAmount', type='float')
-            ]
-        )
-    ])
-
+data = data['data']
 for k in data.keys():
-    st.subheader(k)
-    subgraph = data[k]
-    for e in subgraph.keys():
-        st.markdown(f'### {e}')
-        df = subgraph[e]
-        st.markdown('#### Data')
-        st.write(df)
-        st.markdown('#### Column Types')
-        st.write(df.dtypes)
-        # print(df.dtypes)
+    st.markdown('---')
+    st.markdown(f'### {k}')
+    st.markdown('#### Data')
+    st.write(data[k])
+    st.markdown('#### Column Types')
+    st.write(data[k].dtypes)
+
+# data = gl.load_subgraphs([
+#     # gl.SubgraphDef(
+#     #     url=url_aave_subgraph, 
+#     #     query=query_aave,
+#     #     astypes=[
+#     #           gl.FieldConfig(name='amount', type='float'),
+#     #           gl.FieldConfig(name='timestamp', type='datetime'),
+#     #           gl.FieldConfig(name='reserve.decimals', type='int')
+#     #         ]
+#     #     ), 
+#     gl.SubgraphDef(
+#         url=url_compoundv2_subgraph,
+#         query=query_compoundv2,
+#         astypes=[
+#               gl.FieldConfig(name='amount', type='float'),
+#               gl.FieldConfig(name='underlyingAmount', type='float')
+#             ]
+#         )
+#     ])
+
+# for k in data.keys():
+#     st.subheader(k)
+#     subgraph = data[k]
+#     for e in subgraph.keys():
+#         st.markdown(f'### {e}')
+#         df = subgraph[e]
+#         st.markdown('#### Data')
+#         st.write(df)
+#         st.markdown('#### Column Types')
+#         st.write(df.dtypes)
+#         # print(df.dtypes)

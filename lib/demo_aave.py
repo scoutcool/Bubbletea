@@ -1,5 +1,5 @@
 import altair as alt
-from earlgrey.thegraph import thegraph_loader as gl
+from earlgrey.thegraph import loader as gl
 from earlgrey.transformers import timeseries as ts
 from earlgrey import crypto_compare as cp
 from earlgrey.charts.line import plot as plot_line
@@ -85,15 +85,8 @@ def on_deposits_progress(obj):
     placeholder.text(msg)
 
 
-@st.cache(show_spinner=False)
 def get_token_deposits():
-    data = gl.load_subgraph(subgraph_url, query, on_deposits_progress, 
-        astypes=[
-                gl.FieldConfig(name='timestamp',type='datetime',unit='s'),
-                gl.FieldConfig(name='amount',type='float'),
-                gl.FieldConfig(name='reserve.decimals',type='int')
-            ]
-    )
+    data = gl.load_subgraph(subgraph_url, query, on_deposits_progress)
     df = data["data"]["deposits"]
     df = df[df['reserve.symbol'] == token_symbol] #Filter rows where reserve.symbol == selected symbol
     df['amount'] = df['amount'] / (10 ** df['reserve.decimals'])

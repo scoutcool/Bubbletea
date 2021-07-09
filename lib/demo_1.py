@@ -1,5 +1,4 @@
-from earlgrey.thegraph import thegraph_loader as gl
-import pandas as pd
+from earlgrey.thegraph import loader as gl
 from earlgrey.charts import line as l
 
 start_timestamp = 1609459200
@@ -26,7 +25,8 @@ query_aave = """
 data = gl.load_subgraph(url_aave_subgraph, query_aave)
 
 l.plot(
-    data["data"]["deposits"],
+    title='AAVE Deposits',
+    df=data["data"]["deposits"],
     x={"title": "Time", "field": "timestamp"},
     ys=[{"title": "Amount", "field": "amount"}],
 )

@@ -29,7 +29,10 @@ display, editor = st.beta_columns((2, 1))
 
 selected_demo = None
 with st.sidebar:
-    files = [filename for filename in os.listdir('./lib') if filename.startswith("demo_")]
+    files_str = os.environ.get("demos")
+    files = files_str.split(',')
+    print(files[0])
+    # files = [filename for filename in os.listdir('./lib') if filename.startswith("demo_")]
     selected_demo = st.selectbox('🌟 Pick one', sorted(files))
 
 code_input = """st.header("Earlgrey Demos")"""
