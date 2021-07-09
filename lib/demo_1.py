@@ -23,10 +23,14 @@ query_aave = """
     end_timestamp,
 )
 
+#Load data from Aave subgraph#
 df = gl.load_subgraph(url_aave_subgraph, query_aave)
 df = df["data"]["deposits"]
+
+#Convert #
 df['amount'] = df["amount"] / math.pow(10, 18)
 
+#Draw the data on a line chart
 l.plot(
     title='AAVE Deposits',
     df=df,
