@@ -10,6 +10,12 @@ import earlgrey.thegraph.schema_utils as schema_utils
 
 ITEMS_PER_PAGE = 1000
 
+class SubgraphDef:
+    def __init__(self, url:str, query:str, progressCallback=None) -> None:
+        self.url = url
+        self.query = query
+        self.progressCallback = progressCallback
+
 class TheGraphEntity:
     def __init__(self, node) -> None:
         self.limit = np.Infinity
@@ -264,7 +270,20 @@ def load_subgraph(url:str, query:str, progressCallback=None):
     #     return results
 
 
+def load_subgraphs(defs:list[SubgraphDef]):
+    results = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(defs)) as executor:
+        future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.progressCallback) for d in defs}
+        for thread in executor._threads:
+            add_report_ctx(thread)
 
+        for future in concurrent.futures.as_completed(future_to_url):
+            try:
+                data = future.result()
+                results[data['url']] = data['data']
+            except Exception as e:
+                st.exception(e)
+    return results
 
 
 
