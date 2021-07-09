@@ -1,10 +1,10 @@
 import os
 import sys
 print('hahaahaha')
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 
 
-import lib.earlgrey.thegraph.loader as gl
+import earlgrey.thegraph.loader as gl
 import streamlit as st
 
 
@@ -55,15 +55,11 @@ query_compoundv2 = """
 	    cTokenSymbol
         amount
         underlyingAmount
+        blockTime
 	}
 }
 """
-data = gl.load_subgraph(url_compoundv2_subgraph, query_compoundv2, 
-    astypes=[
-        gl.FieldConfig(name='amount', type='float'),
-        gl.FieldConfig(name='underlyingAmount', type='float')
-        ]
-    )
+data = gl.load_subgraph(url_compoundv2_subgraph, query_compoundv2)
 
 
 data = data['data']
