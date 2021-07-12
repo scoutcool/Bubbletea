@@ -2,6 +2,9 @@ import math
 from earlgrey.thegraph import loader as gl
 from earlgrey.charts import line as l
 
+# # # # # # # # # # # # # # # # #
+# Load data from Aave subgraph  #
+# # # # # # # # # # # # # # # # #
 url_aave_subgraph = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
 query_aave = """
 {
@@ -20,14 +23,14 @@ query_aave = """
     }
 }
 """
-
-#Load data from Aave subgraph
 df = gl.load_subgraph(url_aave_subgraph, query_aave)
 df = df["data"]["deposits"]
 df = df[df['reserve.symbol'] == 'AAVE'] #Only show deposits with AAVE tokens
 df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 decimals
 
-#Draw the data on a line chart
+# # # # # # # # # # # # # # # # #
+# Draw the data on a line chart #
+# # # # # # # # # # # # # # # # #
 l.plot(
     title='AAVE Deposits',
     df=df,
