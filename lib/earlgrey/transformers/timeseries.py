@@ -3,6 +3,7 @@ import datetime
 from typing import Dict, Union
 import pandas as pd
 from enum import Enum
+from decimal import Decimal
 from pandas.core.frame import DataFrame
 
 from pandas.core.indexes.datetimes import DatetimeIndex
@@ -34,7 +35,8 @@ class NaInterpolationMethod(str, Enum):
 class ColumnType(str, Enum):
     int = ("int32",)
     str = ("str",)
-    float = "float"
+    float = ("float64",)
+    bigdecimal = ("float64",)
 
 
 class ColumnConfig:
@@ -42,9 +44,9 @@ class ColumnConfig:
         self,
         name: str,
         aggregate_method: AggregateMethod,
+        type:ColumnType=None,
         na_fill_method: NaInterpolationMethod = None,
-        na_fill_value=None,
-        type=None,
+        na_fill_value=None
     ) -> None:
         self.name = name
         self.aggregate_method = aggregate_method
@@ -118,7 +120,10 @@ def aggregate_timeseries(
     for c in columns:
 
         if c.type != None:
-            df[c.name] = df[c.name].astype(c.type, copy=False, errors="ignore")
+            if c.type == ColumnType.bigdecimal:
+                df[c.name] = df[c.name].apply(lambda x: Decimal(x))
+            else:
+                df[c.name] = df[c.name].astype(c.type, copy=False, errors="ignore")
 
         r = df[[c.name]].resample(interval)
         f = getattr(r, c.aggregate_method)
@@ -164,7 +169,10 @@ def aggregate_groupby(
     params = dict()
     for c in columns:
         if c.type != None:
-            df[c.name] = df[c.name].astype(c.type, copy=False, errors="ignore")
+            if c.type == ColumnType.bigdecimal:
+                df[c.name] = df[c.name].apply(lambda x: Decimal(x))
+            else:
+                df[c.name] = df[c.name].astype(c.type, copy=False, errors="ignore")
         params[c.name] = pd.NamedAgg(column=c.name, aggfunc=c.aggregate_method)
 
     df = df.groupby(by_column).agg(**params)

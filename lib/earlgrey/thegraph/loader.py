@@ -1,4 +1,5 @@
 import streamlit as st
+from decimal import Decimal
 import requests
 import json
 import numpy as np
@@ -11,10 +12,11 @@ import earlgrey.thegraph.schema_utils as schema_utils
 ITEMS_PER_PAGE = 1000
 
 class SubgraphDef:
-    def __init__(self, url:str, query:str, progressCallback=None) -> None:
+    def __init__(self, url:str, query:str, progressCallback=None, useBigDecimal=False) -> None:
         self.url = url
         self.query = query
         self.progressCallback = progressCallback
+        self.useBigDecimal = useBigDecimal
 
 class TheGraphEntity:
     def __init__(self, node) -> None:
@@ -144,8 +146,8 @@ class SubgraphLoader:
             if(l == 0 or l < ITEMS_PER_PAGE or len(arr) >= entity.limit):
                 break
         return arr
-    
-    def _process_datatypes(self, entity:TheGraphEntity, data):
+
+    def _process_datatypes(self, entity:TheGraphEntity, data, useBigDecimal):
         if self.types == None:
             self.types = self.__load_schema()
         df = pd.json_normalize(data)
@@ -175,53 +177,59 @@ class SubgraphLoader:
                     else:
                         astypes[c] = 'int64'
             elif t in ['bigdecimal','bigint']:
-                astypes[c] = 'float'
-        df = df.astype(astypes, copy=False)
+                if useBigDecimal:
+                    df[c] = df[c].apply(lambda x: Decimal(x))
+                else:
+                    astypes[c] = 'float64'
+        if len(astypes.keys()) > 0:
+            df = df.astype(astypes, copy=False)
         return df
 
-    def _load_subgraph_per_entity(self, url, e:TheGraphEntity, progressCallback):
+    
+    def _load_subgraph_per_entity(self, url, e:TheGraphEntity, progressCallback, useBigDecimal:bool):
         df = None
         if(e.bypassPagination):
             data = self._load_subgraph_per_entity_all_pages(url, e, progressCallback)
-            df = self._process_datatypes(e, data)
+            df = self._process_datatypes(e, data, useBigDecimal)
             if hasattr(e, 'orderBy'):
                 ascending = True if hasattr(e, 'orderDirection') and e.orderDirection == 'asc' else False
                 df.sort_values(by=[e.orderBy], ascending=ascending)
         else:
             data = self._load_subgraph_per_entity_per_page(e.name, url, '{'+e.initialQuery+'}', None)
-            df = self._process_datatypes(e, data)
+            df = self._process_datatypes(e, data, useBigDecimal)
         return {
             'entity': e.name,
             'data': df
         }
 
-    """
-    Fetch data from a single subgraph, multiple entities are supported.
-    Params:
-    `url`: The url of the subgraph. [Explore subgraphs](https://thegraph.com/explorer/)
-    `query`: The graph query. [Docs](https://thegraph.com/docs/graphql-api#queries)
-        `bypassPagination`: Boolean value, default `False`. The graph has a limitation of 10000 items max per request. To load all items in the selected query, add this flag in the filter of each entity. For example: `deposits(bypassPagination, ....) {...}`.
-        If `False`, the function will retrieve 100 items.
-    Return:
-    ```
-    {
-        'url': url,
-        'data': {
-            <entityName>: <array_of_items_from_the_graph>
-        }
+"""
+Fetch data from a single subgraph, multiple entities are supported.
+Params:
+`url`: The url of the subgraph. [Explore subgraphs](https://thegraph.com/explorer/)
+`query`: The graph query. [Docs](https://thegraph.com/docs/graphql-api#queries)
+    `bypassPagination`: Boolean value, default `False`. The graph has a limitation of 10000 items max per request. To load all items in the selected query, add this flag in the filter of each entity. For example: `deposits(bypassPagination, ....) {...}`.
+    If `False`, the function will retrieve 100 items.
+`progressCallback`: A callback function that is called when items are retreived from the graph. The argument is defined as `({'entity': <Entity_name>, 'count':<Number_of_items_loaded>})`
+`useBigDecimal`: bool. Default `Faulse`. When True, `BigDecimal`, `BigInt` types from the graph will be converted to Decimal 128 type numbers so to keep the precision of the numbers. Otherwise, converted to float64. Recommend to set to `True` if to display the numbers.
+Return:
+```
+{
+    'url': url,
+    'data': {
+        <entityName>: <DataFrame_of_items_from_the_graph>
     }
-    ```
+}
+```
 
-    """
-
-def load_subgraph(url:str, query:str, progressCallback=None):
+"""
+def load_subgraph(url:str, query:str, progressCallback=None, useBigDecimal=False):
     sl = SubgraphLoader(url)
     entities = sl._parse_thegraph_query(query)
     results = {}
 
     # https://stackoverflow.com/questions/2632520/what-is-the-fastest-way-to-send-100-000-http-requests-in-python
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(entities)) as executor:
-        future_to_url = {executor.submit(sl._load_subgraph_per_entity, url, e, progressCallback) for e in entities}
+        future_to_url = {executor.submit(sl._load_subgraph_per_entity, url, e, progressCallback, useBigDecimal) for e in entities}
         for thread in executor._threads:
             add_report_ctx(thread)
 
@@ -237,43 +245,27 @@ def load_subgraph(url:str, query:str, progressCallback=None):
         'data': results
     }
 
-    # """
-    # Fetch data from multiple subgraphs .
-    # Params:
-    # `url`: The url of the subgraph. [Explore subgraphs](https://thegraph.com/explorer/)
-    # `query`: The graph query. [Docs](https://thegraph.com/docs/graphql-api#queries)
-    #     `bypassPagination`: Boolean value, default `False`. The graph has a limitation of 10000 items max per request. If to load all items in the selected query, add this flag in the filter of each entity. For example: `deposits(bypassPagination, ....) {...}`.
-    # Return:
-    # ```
-    # {
-    #     <url1>: {
-    #         <entityName>: <array_of_items_from_the_graph>
-    #     },
-    #     <url2>: {
-    #         <entityName>: <array_of_items_from_the_graph>
-    #     }
-    # }
-    # """
-    # def load_subgraphs(defs:list[SubgraphDef]):
-    #     results = {}
-    #     with concurrent.futures.ThreadPoolExecutor(max_workers=len(defs)) as executor:
-    #         future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.progressCallback, d.astypes) for d in defs}
-    #         for thread in executor._threads:
-    #             add_report_ctx(thread)
-
-    #         for future in concurrent.futures.as_completed(future_to_url):
-    #             try:
-    #                 data = future.result()
-    #                 results[data['url']] = data['data']
-    #             except Exception as e:
-    #                 st.exception(e)
-    #     return results
-
-
+"""
+Fetch data from multiple subgraphs .
+Params:
+`url`: The url of the subgraph. [Explore subgraphs](https://thegraph.com/explorer/)
+`query`: The graph query. [Docs](https://thegraph.com/docs/graphql-api#queries)
+    `bypassPagination`: Boolean value, default `False`. The graph has a limitation of 10000 items max per request. If to load all items in the selected query, add this flag in the filter of each entity. For example: `deposits(bypassPagination, ....) {...}`.
+Return:
+```
+{
+    <url1>: {
+        <entityName>: <DataFrame_of_items_from_the_graph>
+    },
+    <url2>: {
+        <entityName>: <DataFrame_of_items_from_the_graph>
+    }
+}
+"""
 def load_subgraphs(defs:list[SubgraphDef]):
     results = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(defs)) as executor:
-        future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.progressCallback) for d in defs}
+        future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.progressCallback, d.useBigDecimal) for d in defs}
         for thread in executor._threads:
             add_report_ctx(thread)
 
@@ -284,47 +276,3 @@ def load_subgraphs(defs:list[SubgraphDef]):
             except Exception as e:
                 st.exception(e)
     return results
-
-
-
-
-#tests
-
-# url_aave_subgraph = 'https://api.thegraph.com/subgraphs/name/aave/protocol'
-# query_aave = """
-# {
-#     deposits(
-#         where:{timestamp_gt:1609459200, timestamp_lt:1609462800}
-#         orderBy: timestamp
-#         orderDirection: desc
-#         first:5
-#         # bypassPagination: true
-#     ) {
-#         reserve {
-#             symbol,
-#             decimals
-#         }
-#         amount
-#         timestamp
-#     }
-#     # flashLoans(
-#     #     orderBy: timestamp
-#     #     orderDirection: asc
-#     #     first:3
-#     # ){
-#     #     amount
-#     #     timestamp
-#     # }
-# }
-# """
-# data = load_subgraph(url_aave_subgraph, query_aave)
-
-# data = data['data']
-# for k in data.keys():
-#     st.markdown('---')
-#     st.markdown(f'### {k}')
-#     st.markdown('#### Data')
-#     st.write(data[k])
-#     st.markdown('#### Column Types')
-#     st.write(data[k].dtypes)
-
