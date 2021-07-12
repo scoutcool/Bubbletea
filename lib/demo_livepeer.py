@@ -1,7 +1,6 @@
 import datetime
 import streamlit as st
 import time
-import pandas as pd
 import earlgrey.thegraph.loader as gl
 import earlgrey.transformers.timeseries as ts
 from earlgrey.charts.line import plot as plot_line
@@ -64,12 +63,12 @@ query = """
 )
 
 with st.spinner("Loading data from the graph"):
-    data = gl.load_subgraph(subgraph_url, query)
+    df = gl.load_subgraph(subgraph_url, query, useBigDecimal=True)
 
-df_bond = data["data"]["bondEvents"]
+df_bond = df["data"]["bondEvents"]
 df_bond.rename(columns={"bondedAmount": "amount"}, inplace=True)
-df_rebond = data["data"]["rebondEvents"]
-df_unbond = data["data"]["unbondEvents"]
+df_rebond = df["data"]["rebondEvents"]
+df_unbond = df["data"]["unbondEvents"]
 
 df_amount = (
     df_bond[["timestamp", "amount", "round.id"]]
@@ -175,5 +174,3 @@ df_loss_gains = ts.aggregate_groupby(
 )
 df_loss_gains["total"] = df_loss_gains["loss"] + df_loss_gains["gain"]
 st.write(df_loss_gains)
-# print(df_transcoders)
-# df_transcoders =
