@@ -24,11 +24,8 @@ query_aave = """
 #Load data from Aave subgraph
 df = gl.load_subgraph(url_aave_subgraph, query_aave)
 df = df["data"]["deposits"]
-
-#Only show deposits with AAVE tokens
-df = df[df['reserve.symbol'] == 'AAVE'] 
-#Convert token amount with 18 decimals
-df['amount'] = df["amount"] / math.pow(10, 18)
+df = df[df['reserve.symbol'] == 'AAVE'] #Only show deposits with AAVE tokens
+df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 decimals
 
 #Draw the data on a line chart
 l.plot(
