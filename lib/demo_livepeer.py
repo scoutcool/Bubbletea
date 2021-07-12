@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 import streamlit as st
 import time
 import earlgrey.thegraph.loader as gl
@@ -83,9 +84,9 @@ df_amount_over_time = ts.aggregate_timeseries(
     columns=[
         ts.ColumnConfig(
             name="amount",
+            type=ts.ColumnType.bigdecimal,
             aggregate_method=ts.AggregateMethod.SUM,
-            type=ts.ColumnType.float,
-            na_fill_value=0.0,
+            na_fill_value=Decimal(0.0),
         )
     ],
 )
@@ -104,16 +105,15 @@ plot_line(
     ],
 )
 
-# st.subheader("Stake moved over rounds")
 df_amount_over_round = ts.aggregate_groupby(
     df_amount,
     by_column="round.id",
     columns=[
         ts.ColumnConfig(
             name="amount",
+            type=ts.ColumnType.bigdecimal,
             aggregate_method=ts.AggregateMethod.SUM,
-            type=ts.ColumnType.float,
-            na_fill_value=0.0,
+            na_fill_value=Decimal(0.0),
         )
     ],
 )
@@ -149,6 +149,7 @@ def process_transcoders():
     df3.rename(columns={"delegate.id": "transcoder", "amount": "gain"}, inplace=True)
     df = df0.append(df1).append(df1).append(df2).append(df3)
 
+    df.fillna(Decimal(0.0), inplace=True)
     df.reset_index(inplace=True)
     return df
 
@@ -160,15 +161,15 @@ df_loss_gains = ts.aggregate_groupby(
     columns=[
         ts.ColumnConfig(
             name="loss",
+            type=ts.ColumnType.bigdecimal,
             aggregate_method=ts.AggregateMethod.SUM,
-            type=ts.ColumnType.float,
-            na_fill_value=0.0,
+            na_fill_value=Decimal(0.0),
         ),
         ts.ColumnConfig(
             name="gain",
+            type=ts.ColumnType.bigdecimal,
             aggregate_method=ts.AggregateMethod.SUM,
-            type=ts.ColumnType.float,
-            na_fill_value=0.0,
+            na_fill_value=Decimal(0.0),
         ),
     ],
 )
