@@ -1,11 +1,28 @@
+import time
 from earlgrey.thegraph import loader as gl
 from earlgrey.charts import line as l
 from earlgrey import crypto_compare as cp
 from earlgrey.transformers import timeseries as ts
 import os
+import datetime
+from earlgrey.transformers import urlparser as urlparser
 
-start_timestamp = 1609459200    #2021-01-01 UTC
-end_timestamp = 1610236800      #2021-01-10 UTC
+
+
+urlvars = urlparser.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
+
+try:
+    end_date = urlvars['enddate']
+except KeyError:
+    end_date = datetime.date.today() - datetime.timedelta(days=0)
+
+try:
+    start_date = urlvars['startdate']
+except KeyError:
+    start_date = end_date - datetime.timedelta(days=7)
+
+start_timestamp = int(time.mktime(start_date.timetuple()))
+end_timestamp = int(time.mktime(end_date.timetuple()))
 
 CP_API_TOKEN = os.environ.get("cp_api_token")
 pricing_df = cp.load_historical_data(

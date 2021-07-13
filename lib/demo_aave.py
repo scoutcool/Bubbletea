@@ -1,4 +1,3 @@
-import altair as alt
 from earlgrey.thegraph import loader as gl
 from earlgrey.transformers import timeseries as ts
 from earlgrey import crypto_compare as cp
@@ -7,8 +6,23 @@ import streamlit as st
 import datetime
 import time
 import os
+from earlgrey.transformers import urlparser as urlparser
 
 from flash_card import flash_card
+
+
+urlvars = urlparser.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
+
+try:
+    end_date = urlvars['enddate']
+except KeyError:
+    end_date = datetime.date.today() - datetime.timedelta(days=0)
+
+try:
+    start_date = urlvars['startdate']
+except KeyError:
+    start_date = end_date - datetime.timedelta(days=7)
+
 
 CP_API_TOKEN = os.environ.get("cp_api_token")
 TOKENS = ["AAVE", "ETH", "USDC", "WBTC"]
@@ -21,13 +35,8 @@ token_symbol_cp = st.selectbox("Select a token", TOKENS)
 if token_symbol_cp == "ETH":
     token_symbol = "WETH"
 
-date_range = st.date_input(
-    "Date range",
-    (
-        datetime.date.today() - datetime.timedelta(days=7),
-        datetime.date.today() - datetime.timedelta(days=0),
-    ),
-)
+
+date_range = st.date_input("Date range", (start_date, end_date))
 
 if not len(date_range) == 2:
     st.warning("*Please select a date range.*")
