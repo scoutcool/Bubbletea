@@ -1,17 +1,11 @@
-from earlgrey.thegraph import loader as gl
-from earlgrey.transformers import timeseries as ts
+import earlgrey
 from earlgrey import crypto_compare as cp
-from earlgrey.charts.line import plot as plot_line
 import streamlit as st
 import datetime
 import time
 import os
-from earlgrey.transformers import urlparser as urlparser
 
-from flash_card import flash_card
-
-
-urlvars = urlparser.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
+urlvars = earlgrey.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
 
 try:
     end_date = urlvars['enddate']
@@ -42,14 +36,18 @@ if not len(date_range) == 2:
     st.warning("*Please select a date range.*")
     st.stop()
 
-start_timestamp = int(time.mktime(date_range[0].timetuple()))
-end_timestamp = int(time.mktime(date_range[1].timetuple()))
+start_date = date_range[0]
+end_date = date_range[1]
+start_timestamp = int(time.mktime(start_date.timetuple()))
+end_timestamp = int(time.mktime(end_date.timetuple()))
+
+earlgrey.update_url({'startdate': start_date, 'enddate': end_date})
 
 INTERVALS = {
-    ts.TimeseriesInterval.HOURLY: "Hourly",
-    ts.TimeseriesInterval.DAILY: "Daily",
-    ts.TimeseriesInterval.WEEKLY: "Weekly",
-    ts.TimeseriesInterval.MONTHLY: "Monthly",
+    earlgrey.TimeseriesInterval.HOURLY: "Hourly",
+    earlgrey.TimeseriesInterval.DAILY: "Daily",
+    earlgrey.TimeseriesInterval.WEEKLY: "Weekly",
+    earlgrey.TimeseriesInterval.MONTHLY: "Monthly",
 }
 interval = st.selectbox(
     "Set aggregation frequency",
@@ -95,7 +93,7 @@ def on_deposits_progress(obj):
 
 
 def get_token_deposits():
-    data = gl.load_subgraph(subgraph_url, query, on_deposits_progress)
+    data = earlgrey.load_subgraph(subgraph_url, query, on_deposits_progress)
     df = data["data"]["deposits"]
     df = df[df['reserve.symbol'] == token_symbol] #Filter rows where reserve.symbol == selected symbol
     df['amount'] = df['amount'] / (10 ** df['reserve.decimals'])
@@ -103,14 +101,14 @@ def get_token_deposits():
 
 @st.cache(show_spinner=False)
 def process_deposits(df_deposits, df_rates):
-    df_hourly = ts.aggregate_timeseries(
+    df_hourly = earlgrey.aggregate_timeseries(
         data=df_deposits,
         time_column="timestamp",
-        interval=ts.TimeseriesInterval.HOURLY,
+        interval=earlgrey.TimeseriesInterval.HOURLY,
         columns=[
-            ts.ColumnConfig(
+            earlgrey.ColumnConfig(
                 name="amount",
-                aggregate_method=ts.AggregateMethod.SUM,
+                aggregate_method=earlgrey.AggregateMethod.SUM,
                 na_fill_value=0.0,
             )
         ],
@@ -121,31 +119,30 @@ def process_deposits(df_deposits, df_rates):
     df_hourly.index.names = ['timestamp']
     result = {}
 
-    df = ts.aggregate_timeseries(
+    df = earlgrey.aggregate_timeseries(
         data=df_hourly,
         time_column="timestamp",
         interval=interval,
         columns=[
-            ts.ColumnConfig(
+            earlgrey.ColumnConfig(
                 name="amount",
-                aggregate_method=ts.AggregateMethod.SUM,
+                aggregate_method=earlgrey.AggregateMethod.SUM,
                 na_fill_value=0.0,
             ),
-            ts.ColumnConfig(
+            earlgrey.ColumnConfig(
                 name="rate",
-                aggregate_method=ts.AggregateMethod.LAST,
-                na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL,
+                aggregate_method=earlgrey.AggregateMethod.LAST,
+                na_fill_method=earlgrey.NaInterpolationMethod.FORDWARD_FILL,
             ),
-            ts.ColumnConfig(
+            earlgrey.ColumnConfig(
                 name="volume",
-                aggregate_method=ts.AggregateMethod.SUM,
+                aggregate_method=earlgrey.AggregateMethod.SUM,
                 na_fill_value=0.0,
             ),
         ],
         start_timestamp=start_timestamp,
         end_timestamp=end_timestamp,
     )
-    # print(f'after aggregate \n{df}')
     result[interval] = df
     return result
 
@@ -158,11 +155,10 @@ with st.spinner("Loading deposits data"):
 
 with st.spinner("Loading and aggregating deposit data"):
     dfs = process_deposits(df_deposits, df_rates)
-    # print(df_rates)
     for p in dfs.keys():
         df = dfs[p]
 
-        plot_line(
+        earlgrey.plot_line(
             df,
             title=p,
             x={"field": "timestamp", "title": "Time"},
@@ -184,7 +180,7 @@ with st.spinner("Loading and aggregating deposit data"):
 
         if len(df) > 1:
             coeff = df['amount'].corr(df['rate'])
-            flash_card(
+            earlgrey.plot_text(
                 "Coefficient between `amount` and `rate`",
                 primary_text=0.1,
                 formatter="0,0.00a",

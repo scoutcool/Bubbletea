@@ -1,19 +1,15 @@
 import datetime
 from decimal import Decimal
 from altair.vegalite.v4.api import ConcatChart
-from pandas.core.algorithms import isin
 from pandas.core.frame import DataFrame
 import streamlit as st
 import time
-import pandas as pd
-import earlgrey.thegraph.loader as gl
+import earlgrey
 import earlgrey.transformers.timeseries as ts
-from earlgrey.charts.line import plot as plot_line
-from earlgrey.transformers import urlparser as urlparser
 
 st.header("LIVEPEER Stake Movement")
 
-urlvars = urlparser.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
+urlvars = earlgrey.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
 
 try:
     end_date = urlvars['enddate']
@@ -37,7 +33,7 @@ end_date = date_range[1]
 start_timestamp = int(time.mktime(start_date.timetuple()))
 end_timestamp = int(time.mktime(end_date.timetuple()))
 
-urlparser.update_url({'startdate': start_date, 'enddate':end_date})
+earlgrey.update_url({'startdate': start_date, 'enddate':end_date})
 
 subgraph_url = "https://api.thegraph.com/subgraphs/name/livepeer/livepeer"
 query_date_clause = "{timestamp_gte:%s,timestamp_lt:%s}" % (
@@ -80,7 +76,7 @@ query = """
 )
 
 with st.spinner("Loading data from the graph"):
-    df = gl.load_subgraph(subgraph_url, query, useBigDecimal=True)
+    df = earlgrey.load_subgraph(subgraph_url, query, useBigDecimal=True)
 
 df_bond = df["data"]["bondEvents"]
 df_bond.rename(columns={"bondedAmount": "amount"}, inplace=True)
@@ -123,7 +119,7 @@ else:
     )
     df_amount_over_time.index.names = ["time"]
     st.subheader("Stake moved over time")
-    plot_line(
+    earlgrey.plot_line(
         df_amount_over_time,
         x={
             "field": "time",
