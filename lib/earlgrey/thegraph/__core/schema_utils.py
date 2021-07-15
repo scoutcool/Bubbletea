@@ -1,5 +1,9 @@
 
 REGEX_TIMESTAMP = r'^1[5-9]\d\d\d\d\d\d\d\d$'
+ITEMS_PER_PAGE = 1000
+
+def get_max_items_per_page():
+  return ITEMS_PER_PAGE
 
 def _ultimate_ofType(fieldType):
     if fieldType['ofType'] == None:

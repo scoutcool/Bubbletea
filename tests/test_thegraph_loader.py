@@ -1,46 +1,40 @@
-import os
-import sys
-print('hahaahaha')
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-
-import earlgrey.thegraph.loader as gl
+from lib import earlgrey
 import streamlit as st
-from decimal import Decimal
 
-t = Decimal(1000)
-t = t / 10
-print(t)
 
-# st.subheader('Single Subgraph')
-# url_aave_subgraph = 'https://api.thegraph.com/subgraphs/name/aave/protocol'
-# query_aave = """
-# {
-#     deposits(
-#         where:{timestamp_gt:1609459200, timestamp_lt:1609462800}
-#         orderBy: timestamp
-#         orderDirection: desc
-#         first:5
-#         # bypassPagination: true
-#     ) {
-#         reserve {
-#             symbol,
-#             decimals
-#         }
-#         amount
-#         timestamp
-#     }
-#     flashLoans(
-#         orderBy: timestamp
-#         orderDirection: asc
-#         first:3
-#     ){
-#         amount
-#          timestamp
-#      }
-# }
-# """
-# # data = gl.load_subgraph(url_aave_subgraph, query_aave)
+st.subheader('Single Subgraph')
+url_aave_subgraph = 'https://api.thegraph.com/subgraphs/name/aave/protocol'
+query_aave = """
+{
+    deposits(
+        where:{timestamp_gt:1609459200, timestamp_lt:1609462800}
+        orderBy: timestamp
+        orderDirection: desc
+        first:5
+        # bypassPagination: true
+    ) {
+        reserve {
+            symbol,
+            decimals
+        }
+        amount
+        timestamp
+    }
+    flashLoans(
+        orderBy: timestamp
+        orderDirection: asc
+        first:3
+    ){
+        amount
+         timestamp
+     }
+}
+"""
+data = earlgrey.load_subgraph(url_aave_subgraph, query_aave)
+print(data)
 
 
 # url_compoundv2_subgraph = 'https://api.thegraph.com/subgraphs/name/graphprotocol/compound-v2'
