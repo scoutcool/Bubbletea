@@ -30,7 +30,7 @@ df = df[df['reserve.symbol'] == 'AAVE']
 df['amount'] = df["amount"] / math.pow(10, 18)
 
 #Draw the data on a line chart
-earlgrey.plot_lin(
+earlgrey.plot_line(
     title='AAVE Deposits',
     df=df,
     x={"title": "Time", "field": "timestamp"},
