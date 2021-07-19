@@ -1,4 +1,4 @@
-Earlgrey
+Bubble Tea
 --
 
 A python library which enables developers to quickly build any data applications on the emerging Web3 infrastructure. 

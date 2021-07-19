@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-from earlgrey.charts.line import plot as plot_line
+import bubbletea
 
 """ 
 --- Nominal Heuristics ---
@@ -36,7 +36,7 @@ data2 = pd.DataFrame(
 st.subheader("Nominal numbers as string")
 st.write(data1)
 
-plot_line(
+bubbletea.plot_line(
     data1,
     x={"field": "round", "title": "Round"},
     ys=[
@@ -50,7 +50,7 @@ plot_line(
 st.subheader("Nominal numbers as number")
 st.write(data2)
 
-plot_line(
+bubbletea.plot_line(
     data2,
     x={"field": "round", "title": "Round"},
     ys=[
@@ -96,7 +96,7 @@ data4 = pd.DataFrame(
 st.subheader("Timestamps as number")
 st.write(data3)
 
-plot_line(
+bubbletea.plot_line(
     data3,
     x={
         "field": "timestamp",

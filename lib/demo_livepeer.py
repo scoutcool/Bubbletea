@@ -4,12 +4,12 @@ from altair.vegalite.v4.api import ConcatChart
 from pandas.core.frame import DataFrame
 import streamlit as st
 import time
-import earlgrey
-import earlgrey.transformers.timeseries as ts
+import bubbletea
+import bubbletea.transformers.timeseries as ts
 
 st.header("LIVEPEER Stake Movement")
 
-urlvars = earlgrey.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
+urlvars = bubbletea.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
 
 try:
     end_date = urlvars['enddate']
@@ -33,7 +33,7 @@ end_date = date_range[1]
 start_timestamp = int(time.mktime(start_date.timetuple()))
 end_timestamp = int(time.mktime(end_date.timetuple()))
 
-earlgrey.update_url({'startdate': start_date, 'enddate':end_date})
+bubbletea.update_url({'startdate': start_date, 'enddate':end_date})
 
 subgraph_url = "https://api.thegraph.com/subgraphs/name/livepeer/livepeer"
 query_date_clause = "{timestamp_gte:%s,timestamp_lt:%s}" % (
@@ -76,7 +76,7 @@ query = """
 )
 
 with st.spinner("Loading data from the graph"):
-    df = earlgrey.load_subgraph(subgraph_url, query, useBigDecimal=True)
+    df = bubbletea.load_subgraph(subgraph_url, query, useBigDecimal=True)
 
 df_bond = df["data"]["bondEvents"]
 df_bond.rename(columns={"bondedAmount": "amount"}, inplace=True)
@@ -119,7 +119,7 @@ else:
     )
     df_amount_over_time.index.names = ["time"]
     st.subheader("Stake moved over time")
-    earlgrey.plot_line(
+    bubbletea.plot_line(
         df_amount_over_time,
         x={
             "field": "time",

@@ -1,4 +1,4 @@
-import earlgrey
+import bubbletea
 import streamlit as st
 import math
 
@@ -28,7 +28,7 @@ query_aave = """
 }
 """
 
-df = earlgrey.load_subgraph(url_aave_subgraph, query_aave)
+df = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
 df = df["data"]["deposits"]
 df = df[df['reserve.symbol'] == 'AAVE'] #Only show deposits with AAVE tokens
 df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 decimals
@@ -38,14 +38,14 @@ with st.beta_expander("Some explanations"):
 
 col1, col2, col3 = st.beta_columns([3.5,1,1])
 with col1:
-    l.plot(
+    bubbletea.plot_line(
     title='AAVE Deposits1',
     df=df,
     x={"title": "Time", "field": "timestamp"},
     ys=[{"title": "Amount", "field": "amount"}],
 )
 
-    l.plot(
+    bubbletea.plot_line(
     title='AAVE Deposits2',
     df=df,
     x={"title": "Time", "field": "timestamp"},

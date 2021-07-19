@@ -1,6 +1,6 @@
 
 import time
-import earlgrey
+import bubbletea
 import os
 import datetime
 
@@ -8,7 +8,7 @@ import datetime
 from dotenv import load_dotenv
 load_dotenv()
 
-urlvars = earlgrey.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
+urlvars = bubbletea.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
 
 try:
     end_date = urlvars['enddate']
@@ -20,7 +20,7 @@ try:
 except KeyError:
     start_date = end_date - datetime.timedelta(days=7)
 
-earlgrey.update_url({'startdate': start_date, 'enddate': end_date})
+bubbletea.update_url({'startdate': start_date, 'enddate': end_date})
 
 start_timestamp = int(time.mktime(start_date.timetuple()))
 end_timestamp = int(time.mktime(end_date.timetuple()))
@@ -50,17 +50,17 @@ query_aave = """
     end_timestamp,
 )
 
-data_aave = earlgrey.load_subgraph(url_aave_subgraph, query_aave)
+data_aave = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
 data_aave = data_aave["data"]["deposits"]
 data_aave = data_aave[data_aave['reserve.symbol'] == 'AAVE'] #Only show deposits with AAVE tokens
-data_hourly_aave = earlgrey.aggregate_timeseries( #aggregate deposits data by hours
+data_hourly_aave = bubbletea.aggregate_timeseries( #aggregate deposits data by hours
     data_aave,
     time_column="timestamp",
-    interval=earlgrey.TimeseriesInterval.HOURLY,
+    interval=bubbletea.TimeseriesInterval.HOURLY,
     columns=[
-        earlgrey.ColumnConfig(
+        bubbletea.ColumnConfig(
             name="amount",
-            aggregate_method=earlgrey.AggregateMethod.SUM,
+            aggregate_method=bubbletea.AggregateMethod.SUM,
             na_fill_value=0.0,
         )
     ],
@@ -71,7 +71,7 @@ data_hourly_aave["amount"] = data_hourly_aave["amount"] / 1000000000000000000 #D
 # Load pricing data from cryptocompare.com  #
 # # # # # # # # # # # # # # # # # # # # # # #
 CP_API_TOKEN = os.environ.get("cp_api_token")
-pricing_df = earlgrey.load_historical_data(
+pricing_df = bubbletea.load_historical_data(
     "AAVE", "USD", start_timestamp, end_timestamp, CP_API_TOKEN, 2000
 )
 
@@ -83,7 +83,7 @@ result = data_hourly_aave.merge(pricing_df, left_index=True, right_on='time')
 # # # # # # # # # # # # # # # # #
 # Draw the data on a line chart #
 # # # # # # # # # # # # # # # # # 
-earlgrey.plot_line(
+bubbletea.plot_line(
     title='Hourly AAVE Deposits vs Pricing',
     df=result, 
     x={"title":"Time", "field":"time"},
