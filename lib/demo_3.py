@@ -4,6 +4,7 @@ from earlgrey.thegraph import loader as gl
 from earlgrey.charts import line as l
 import math
 
+st.set_page_config(page_title="Testing Dashboard Layout", layout="wide")
 st.header("Testing template layout")
 url_aave_subgraph = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
 query_aave = """
