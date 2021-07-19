@@ -1,14 +1,6 @@
 import datetime
 import streamlit as st
 
-"""
-Retrieve URL vars:
-`specs`:
-    A list of `{key:<str>, type:<str>}`.
-    `key`: the url param key
-    `type`: Optional. Convert the value to desired type.
-
-"""
 def parse_url_var(specs:list):
     result = {}
     urlvars = st.experimental_get_query_params()
