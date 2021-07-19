@@ -1,11 +1,11 @@
-import earlgrey
-from earlgrey import crypto_compare as cp
+import bubbletea
+from bubbletea import crypto_compare as cp
 import streamlit as st
 import datetime
 import time
 import os
 
-urlvars = earlgrey.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
+urlvars = bubbletea.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
 
 try:
     end_date = urlvars['enddate']
@@ -41,13 +41,13 @@ end_date = date_range[1]
 start_timestamp = int(time.mktime(start_date.timetuple()))
 end_timestamp = int(time.mktime(end_date.timetuple()))
 
-earlgrey.update_url({'startdate': start_date, 'enddate': end_date})
+bubbletea.update_url({'startdate': start_date, 'enddate': end_date})
 
 INTERVALS = {
-    earlgrey.TimeseriesInterval.HOURLY: "Hourly",
-    earlgrey.TimeseriesInterval.DAILY: "Daily",
-    earlgrey.TimeseriesInterval.WEEKLY: "Weekly",
-    earlgrey.TimeseriesInterval.MONTHLY: "Monthly",
+    bubbletea.TimeseriesInterval.HOURLY: "Hourly",
+    bubbletea.TimeseriesInterval.DAILY: "Daily",
+    bubbletea.TimeseriesInterval.WEEKLY: "Weekly",
+    bubbletea.TimeseriesInterval.MONTHLY: "Monthly",
 }
 interval = st.selectbox(
     "Set aggregation frequency",
@@ -93,7 +93,7 @@ def on_deposits_progress(obj):
 
 
 def get_token_deposits():
-    data = earlgrey.load_subgraph(subgraph_url, query, on_deposits_progress)
+    data = bubbletea.load_subgraph(subgraph_url, query, on_deposits_progress)
     df = data["data"]["deposits"]
     df = df[df['reserve.symbol'] == token_symbol] #Filter rows where reserve.symbol == selected symbol
     df['amount'] = df['amount'] / (10 ** df['reserve.decimals'])
@@ -101,14 +101,14 @@ def get_token_deposits():
 
 @st.cache(show_spinner=False)
 def process_deposits(df_deposits, df_rates):
-    df_hourly = earlgrey.aggregate_timeseries(
+    df_hourly = bubbletea.aggregate_timeseries(
         data=df_deposits,
         time_column="timestamp",
-        interval=earlgrey.TimeseriesInterval.HOURLY,
+        interval=bubbletea.TimeseriesInterval.HOURLY,
         columns=[
-            earlgrey.ColumnConfig(
+            bubbletea.ColumnConfig(
                 name="amount",
-                aggregate_method=earlgrey.AggregateMethod.SUM,
+                aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=0.0,
             )
         ],
@@ -119,24 +119,24 @@ def process_deposits(df_deposits, df_rates):
     df_hourly.index.names = ['timestamp']
     result = {}
 
-    df = earlgrey.aggregate_timeseries(
+    df = bubbletea.aggregate_timeseries(
         data=df_hourly,
         time_column="timestamp",
         interval=interval,
         columns=[
-            earlgrey.ColumnConfig(
+            bubbletea.ColumnConfig(
                 name="amount",
-                aggregate_method=earlgrey.AggregateMethod.SUM,
+                aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=0.0,
             ),
-            earlgrey.ColumnConfig(
+            bubbletea.ColumnConfig(
                 name="rate",
-                aggregate_method=earlgrey.AggregateMethod.LAST,
-                na_fill_method=earlgrey.NaInterpolationMethod.FORDWARD_FILL,
+                aggregate_method=bubbletea.AggregateMethod.LAST,
+                na_fill_method=bubbletea.NaInterpolationMethod.FORDWARD_FILL,
             ),
-            earlgrey.ColumnConfig(
+            bubbletea.ColumnConfig(
                 name="volume",
-                aggregate_method=earlgrey.AggregateMethod.SUM,
+                aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=0.0,
             ),
         ],
@@ -158,7 +158,7 @@ with st.spinner("Loading and aggregating deposit data"):
     for p in dfs.keys():
         df = dfs[p]
 
-        earlgrey.plot_line(
+        bubbletea.plot_line(
             df,
             title=p,
             x={"field": "timestamp", "title": "Time"},
@@ -180,7 +180,7 @@ with st.spinner("Loading and aggregating deposit data"):
 
         if len(df) > 1:
             coeff = df['amount'].corr(df['rate'])
-            earlgrey.plot_text(
+            bubbletea.plot_text(
                 "Coefficient between `amount` and `rate`",
                 primary_text=0.1,
                 formatter="0,0.00a",

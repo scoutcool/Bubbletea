@@ -1,7 +1,7 @@
 import os, sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from lib import earlgrey
+from lib import bubbletea
 import streamlit as st
 
 
@@ -33,7 +33,7 @@ query_aave = """
      }
 }
 """
-data = earlgrey.load_subgraph(url_aave_subgraph, query_aave)
+data = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
 print(data)
 
 

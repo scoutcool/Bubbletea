@@ -1,5 +1,5 @@
 import math
-import earlgrey
+import bubbletea
 
 # # # # # # # # # # # # # # # # #
 # Load data from Aave subgraph  #
@@ -23,7 +23,7 @@ query_aave = """
 }
 """
 
-df = earlgrey.load_subgraph(url_aave_subgraph, query_aave)
+df = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
 df = df["data"]["deposits"]
 df = df[df['reserve.symbol'] == 'AAVE'] #Only show deposits with AAVE tokens
 df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 decimals
@@ -32,7 +32,7 @@ df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 dec
 # # # # # # # # # # # # # # # # #
 # Draw the data on a line chart #
 # # # # # # # # # # # # # # # # #
-earlgrey.plot_line(
+bubbletea.plot_line(
     title='AAVE Deposits',
     df=df,
     x={"title": "Time", "field": "timestamp"},
