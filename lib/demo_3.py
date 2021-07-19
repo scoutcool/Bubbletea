@@ -4,7 +4,12 @@ from earlgrey.thegraph import loader as gl
 from earlgrey.charts import line as l
 import math
 
-st.set_page_config(page_title="Testing Dashboard Layout", layout="wide")
+try:
+    #Hack to avoid streamlit exception
+    st.set_page_config(page_title="Testing Dashboard Layout", layout="wide")
+except:
+    pass
+
 st.header("Testing template layout")
 url_aave_subgraph = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
 query_aave = """
@@ -33,12 +38,17 @@ df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 dec
 with st.beta_expander("Some explanations"):
     st.write("Example tests of the explainer components")
 
-col1, col2, col3 = st.beta_columns([4,1,1])
+col1, col2, col3 = st.beta_columns([3.5,1,1])
 with col1:
-    st.header("A cat")
-    st.image("https://static.streamlit.io/examples/cat.jpg")
     l.plot(
-    title='AAVE Deposits',
+    title='AAVE Deposits1',
+    df=df,
+    x={"title": "Time", "field": "timestamp"},
+    ys=[{"title": "Amount", "field": "amount"}],
+)
+
+    l.plot(
+    title='AAVE Deposits2',
     df=df,
     x={"title": "Time", "field": "timestamp"},
     ys=[{"title": "Amount", "field": "amount"}],
