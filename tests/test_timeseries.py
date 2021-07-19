@@ -4,10 +4,9 @@ from pandas.core.indexes.datetimes import DatetimeIndex
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-import lib.earlgrey.transformers.timeseries as ts
+from lib import bubbletea
 import pandas as pd
 import json
-import math
 
 def is_json(candidate):
     try:
@@ -40,19 +39,19 @@ weekly_data_sets = [
 ]
 print('~~~~weekly output~~~')
 for data_set in weekly_data_sets:
-    df = ts.aggregate_timeseries(
+    df = bubbletea.aggregate_timeseries(
         data = data_set["data"],
         time_column='time',
-        interval=ts.TimeseriesInterval.WEEKLY,
+        interval=bubbletea.TimeseriesInterval.WEEKLY,
         columns=[
-            ts.ColumnConfig(name='amount', 
+            bubbletea.ColumnConfig(name='amount', 
                     aggregate_method=ts.AggregateMethod.SUM, 
                     na_fill_value=0.0,
-                    type=ts.ColumnType.float),
-            ts.ColumnConfig(name='rate', 
+                    type=bubbletea.ColumnType.float),
+            bubbletea.ColumnConfig(name='rate', 
                     aggregate_method=ts.AggregateMethod.LAST, 
                     na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL,
-                    type=ts.ColumnType.float)
+                    type=bubbletea.ColumnType.float)
         ]
     )
     print(df)
@@ -75,19 +74,19 @@ monthly_data_sets = [
 ]
 print('~~~~monthly output~~~')
 for data_set in monthly_data_sets:
-    df = ts.aggregate_timeseries(
+    df = bubbletea.aggregate_timeseries(
         data = data_set["data"],
         time_column='time',
         interval=ts.TimeseriesInterval.MONTHLY,
         columns=[
-            ts.ColumnConfig(name='amount', 
+            bubbletea.ColumnConfig(name='amount', 
                     aggregate_method=ts.AggregateMethod.SUM, 
                     na_fill_value=0.0,
-                    type=ts.ColumnType.float),
-            ts.ColumnConfig(name='rate', 
-                    aggregate_method=ts.AggregateMethod.LAST, 
-                    na_fill_method=ts.NaInterpolationMethod.FORDWARD_FILL,
-                    type=ts.ColumnType.float)
+                    type=bubbletea.ColumnType.float),
+            bubbletea.ColumnConfig(name='rate', 
+                    aggregate_method=bubbletea.AggregateMethod.LAST, 
+                    na_fill_method=bubbletea.NaInterpolationMethod.FORDWARD_FILL,
+                    type=bubbletea.ColumnType.float)
         ]
     )
     print(df)
