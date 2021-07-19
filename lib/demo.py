@@ -16,14 +16,6 @@ st.sidebar.title(":hot_pepper: Demos")
 
 alt.renderers.set_embed_options(actions=False)
 
-st.markdown(
-    """ <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    </style> """,
-    unsafe_allow_html=True,
-)
-
 with st.beta_expander("About Earlgrey"):
     with open('README.md', 'r') as file:
         intro = file.read()
