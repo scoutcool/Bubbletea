@@ -16,7 +16,7 @@ st.sidebar.title(":hot_pepper: Demos")
 
 alt.renderers.set_embed_options(actions=False)
 
-with st.beta_expander("About bubbletea"):
+with st.beta_expander("About Bubbletea"):
     with open('README.md', 'r') as file:
         intro = file.read()
         st.markdown(intro)
