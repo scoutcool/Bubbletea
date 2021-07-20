@@ -1,10 +1,18 @@
+
+
 import setuptools
 from os import path
 
-VERSION = "0.0.17"
+VERSION = "0.0.10"
 NAME="BubbleTea"
-DESCRIPTION = "hello "+NAME
-LONG_DESCRIPTION = "https://github.com/scout-cool/earlgrey"
+
+DESCRIPTION = "BubbleTea enables developers to quickly build any data applications on the emerging Web3 infrastructure."
+# LONG_DESCRIPTION = DESCRIPTION
+LONG_DESCRIPTION = open("README.md", "rt").read()
+LONG_DESCRIPTION = ""
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md')) as f:
+    LONG_DESCRIPTION = f.read()
 
 
 # import sys
@@ -22,19 +30,19 @@ LONG_DESCRIPTION = "https://github.com/scout-cool/earlgrey"
 
 
 setuptools.setup(
-    name="example-pkg-earlgrey",
+    name="bubbletea",
     version=VERSION,
     author="Supermax Tech.",
     author_email="hello@scout.cool",
-    description="A small example package",
+    description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    url="https://github.com/scout-cool/streamlit_flow",
+    url="https://github.com/scout-cool/BubbleTea",
     package_dir={"": "lib"},
     packages=setuptools.find_packages(where="lib"),
     # install_requirements=requirements,
     install_requires=[
-        'streamlit','graphql-core', 'st-flashcard'
+        'streamlit==0.82.0','graphql-core==3.1.5', 'st-flashcard==0.0.4'
     ],
     entry_points={
         'console_scripts': ['bubbletea = bubbletea.cli:run']
