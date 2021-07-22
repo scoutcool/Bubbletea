@@ -1,5 +1,4 @@
 import bubbletea
-from bubbletea import crypto_compare as cp
 import streamlit as st
 import datetime
 import time
@@ -80,8 +79,8 @@ query = """
 )
 
 def get_rates_df(symbol, start_timestamp, end_timestamp):
-    df = cp.load_historical_data(
-        symbol, "USD", start_timestamp, end_timestamp, CP_API_TOKEN, 2000
+    df = bubbletea.load_historical_data(
+        symbol, "USD", start_timestamp, end_timestamp, CP_API_TOKEN, 2000, 'H'
     )
     df['rate'] = df['close']
     return df.set_index('time')

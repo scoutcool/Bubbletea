@@ -1,18 +1,18 @@
 import streamlit as st
 from . import thegraph
-from . import crypto_compare as cp
+from . import cryptocompare as cp
 from .transformers import urlparser
 from .transformers import timeseries as ts
 from .charts import line as line
 from flash_card import flash_card
 
+# CSS hack to hide menu from streamlit
 st.markdown(""" <style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-</style> """, unsafe_allow_html=True)
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style> """, unsafe_allow_html=True)
 
 TimeseriesInterval = ts.TimeseriesInterval
-AggregateMethod = ts.AggregateMethod
 AggregateMethod = ts.AggregateMethod
 NaInterpolationMethod = ts.NaInterpolationMethod
 ColumnType = ts.ColumnType
@@ -22,6 +22,7 @@ aggregate_timeseries = ts.aggregate_timeseries
 
 load_subgraph = thegraph.load_subgraph
 load_subgraphs = thegraph.load_subgraphs
+
 load_historical_data = cp.load_historical_data
 
 plot_line = line.plot
