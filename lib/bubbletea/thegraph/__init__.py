@@ -1,4 +1,4 @@
-from .__core.SubgraphLoader import SubgraphLoader
+from .__core.SubgraphLoaderV2 import SubgraphLoader
 import streamlit as st
 import concurrent.futures
 from streamlit.report_thread import add_report_ctx
@@ -33,6 +33,11 @@ Return:
 
 """
 def load_subgraph(url:str, query:str, progressCallback=None, useBigDecimal=False):
+    sl = SubgraphLoader(url, query)
+    return sl.load_subgraph(progressCallback, useBigDecimal)
+    # return sl.load_subgraph(url, query, progressCallback, useBigDecimal)
+
+def load_subgraph1(url:str, query:str, progressCallback=None, useBigDecimal=False):
     sl = SubgraphLoader(url)
     entities = sl._parse_thegraph_query(query)
     results = {}
