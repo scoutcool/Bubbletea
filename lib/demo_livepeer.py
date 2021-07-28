@@ -146,7 +146,7 @@ else:
     )
     df_amount_over_round.index.names = ["round"]
     st.write(df_amount_over_round)
-    plot_line(
+    bubbletea.plot_line(
         df_amount_over_round,
         title='Stake moved over rounds',
         x={"field": "round", "title": "Round", "type":"ordinal"},# ['quantitative', 'ordinal', 'temporal', 'nominal']
