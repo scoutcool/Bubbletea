@@ -45,7 +45,7 @@ https://streamlit-flow.herokuapp.com/
 
 
 ### How to install
-[Installation](https://github.com/scout-cool/streamlit_flow/blob/main/install.md)
+pipenv install
 
 
 ### Get in touch

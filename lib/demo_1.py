@@ -4,8 +4,8 @@ import bubbletea
 # # # # # # # # # # # # # # # # #
 # Load data from Aave subgraph  #
 # # # # # # # # # # # # # # # # #
-url_aave_subgraph = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
-query_aave = """
+url = "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
+query = """
 {
     deposits(
         where:{timestamp_gt:1609459200, timestamp_lt:1610236800}
@@ -23,7 +23,7 @@ query_aave = """
 }
 """
 
-df = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
+df = bubbletea.load_subgraph(url, query)
 df = df["data"]["deposits"]
 df = df[df['reserve.symbol'] == 'AAVE'] #Only show deposits with AAVE tokens
 df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 decimals
