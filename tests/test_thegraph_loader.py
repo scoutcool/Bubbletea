@@ -6,15 +6,14 @@ import streamlit as st
 
 
 st.subheader('Single Subgraph')
-url_aave_subgraph = 'https://api.thegraph.com/subgraphs/name/aave/protocol'
+url_aave_subgraph = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v2'
 query_aave = """
 {
     deposits(
         where:{timestamp_gt:1609459200, timestamp_lt:1609462800}
         orderBy: timestamp
         orderDirection: desc
-        first:5
-        # bypassPagination: true
+        bypassPagination: true
     ) {
         reserve {
             symbol,
@@ -35,7 +34,6 @@ query_aave = """
 """
 data = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
 print(data)
-
 
 # url_compoundv2_subgraph = 'https://api.thegraph.com/subgraphs/name/graphprotocol/compound-v2'
 # query_compoundv2 = """

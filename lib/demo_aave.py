@@ -87,13 +87,13 @@ def get_rates_df(symbol, start_timestamp, end_timestamp):
 
 placeholder = st.empty()
 def on_deposits_progress(obj):
-    msg = f"{obj['count']} {obj['entity']} loaded."
+    msg = f"{obj['deposits']} deposits loaded."
     placeholder.text(msg)
 
 
 def get_token_deposits():
     data = bubbletea.load_subgraph(subgraph_url, query, on_deposits_progress)
-    df = data["data"]["deposits"]
+    df = data["deposits"]
     df = df[df['reserve.symbol'] == token_symbol] #Filter rows where reserve.symbol == selected symbol
     df['amount'] = df['amount'] / (10 ** df['reserve.decimals'])
     return df

@@ -60,7 +60,7 @@ query_aave = """
 )
 
 data_aave = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
-data_aave = data_aave["data"]["deposits"]
+data_aave = data_aave["deposits"]
 data_aave = data_aave[
     data_aave["reserve.symbol"] == "AAVE"
 ]  # Only show deposits with AAVE tokens

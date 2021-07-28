@@ -3,25 +3,23 @@ from . import schema_utils
 import streamlit as st
 from decimal import Decimal
 import requests
-import json
 import pandas as pd
 from graphql import parse
 
-
 class SubgraphLoader:
-    def __init__(self, subgraphUrl:str) -> None:
+    def __init__(self, subgraphUrl:str, query) -> None:
         self.subgraphUrl = subgraphUrl
         self.types = None
-        self.types = self.__load_schema()
+        self.types = self._load_schema()
+        self.entities = self._parse_thegraph_query(query)
         pass
-    
+
     @st.cache(show_spinner=False)
-    def __load_schema(self):
+    def _load_schema(self):
         query = schema_utils.get_inspect_query()
         response = requests.post(self.subgraphUrl, json={'query': query})
-        text = json.loads(response.text)
+        text = schema_utils.process_response_to_json(response)
         return text['data']['__schema']['types']
-    
 
     def _parse_thegraph_query(self, queryTemplate):
         ast = parse(queryTemplate, no_location=True)
@@ -36,44 +34,9 @@ class SubgraphLoader:
         return entities
 
     @st.cache(show_spinner=False)
-    def _load_subgraph_per_entity_per_page(self, entity_name, url, query, since):
-        if not since == None:
-            query = query.replace('__LASTID__', since)
-        
+    def _load_subgraph_query(self, url, query):
         response = requests.post(url, json={'query': query})
-        text = json.loads(response.text)
-        if 'data' in text:
-            return text["data"][entity_name]
-        elif 'errors' in text:
-            raise ValueError(text['errors'])
-        else:
-            raise ValueError(f'Unable to process data: {text}')
-
-    def _findColumnType(self, c:str):
-        segs = c.split('.')
-        segi = 0
-        while segi < len(segs):
-
-            segi += 1
-
-    def _load_subgraph_per_entity_all_pages(self, url, entity:TheGraphEntity, progressCallback):
-        arr = []
-        i = 0
-        while True:
-            l = len(arr)
-            query = entity.initialQuery if l == 0 else entity.paginationQuery
-            since = None if l == 0 else arr[l-1]['id']
-            parr = self._load_subgraph_per_entity_per_page(entity.name, url, '{'+query+'}', since)
-            arr.extend(parr)
-            l = len(parr)
-            if progressCallback != None:
-                progressCallback({'entity': entity.name, 'count':len(arr)})
-
-            # print('!!pagination asc '+entity.name+' '+str(i)+' '+str(since)+' '+str(len(arr)))
-            i += 1
-            if(l == 0 or l < schema_utils.get_max_items_per_page() or len(arr) >= entity.limit):
-                break
-        return arr
+        return schema_utils.process_response_to_json(response)
 
     def _process_datatypes(self, entity:TheGraphEntity, data, useBigDecimal):
         if self.types == None:
@@ -113,19 +76,59 @@ class SubgraphLoader:
             df = df.astype(astypes, copy=False)
         return df
 
+    def _load_page(self, progressCallback=None, initialPage=False):
+        query = '{'
+        has_entity = False
+        for e in self.entities:
+            if initialPage:
+                query += e.initialQuery
+                has_entity = True
+            elif e.bypassPagination:
+                eq = e.paginationQuery.replace('__LASTID__', e.lastId)
+                query += str(eq)
+                has_entity = True
+        query += '}'
+        if not has_entity:
+            return False
+
+        # print(f'~~~query~~~\n{query}\n\n')
+        
+        text = self._load_subgraph_query(self.subgraphUrl, query)
+        data = text['data']
+        has_more_page = False
+        progress = {}
+        for k in data.keys():
+            for e in self.entities:
+                if k == e.name:
+                    d = data[k]
+                    l = len(d)
+                    e.data.extend(d)
+                    if progressCallback != None:
+                        progress[k] = l + len(e.data)
+
+                    if e.bypassPagination:
+                        # print(f'~~~{k}\t{l}~~~\n{d}\n\n')
+                        e.lastId = None if l == 0 else d[l-1]['id']
+                        if l >= schema_utils.get_max_items_per_page():
+                            has_more_page = True 
+        if progressCallback != None:
+            progressCallback(progress)
+        return has_more_page
     
-    def _load_subgraph_per_entity(self, url, e:TheGraphEntity, progressCallback, useBigDecimal:bool):
-        df = None
-        if(e.bypassPagination):
-            data = self._load_subgraph_per_entity_all_pages(url, e, progressCallback)
-            df = self._process_datatypes(e, data, useBigDecimal)
-            if hasattr(e, 'orderBy'):
-                ascending = True if hasattr(e, 'orderDirection') and e.orderDirection == 'asc' else False
-                df.sort_values(by=[e.orderBy], ascending=ascending)
-        else:
-            data = self._load_subgraph_per_entity_per_page(e.name, url, '{'+e.initialQuery+'}', None)
-            df = self._process_datatypes(e, data, useBigDecimal)
-        return {
-            'entity': e.name,
-            'data': df
-        }
+
+    def load_subgraph(self, progressCallback=None, useBigDecimal=False):
+        # print('?????load_subgraph')
+        has_more_page = self._load_page(progressCallback, True)
+        # print(f'?????has_more_page {has_more_page}')
+        while has_more_page:
+            has_more_page = self._load_page(progressCallback, False)
+            
+        result = {}
+        for e in self.entities:
+            df = self._process_datatypes(e, e.data, useBigDecimal)
+            if e.bypassPagination and e.orderBy != None:
+                ascending = (e.orderDirection == 'asc')
+                df.sort_values(e.orderBy, ascending=ascending, inplace=True)
+            result[e.name] = df
+            # print(f'~~~{e.name} {len(e.data)}~~~\n{df}\n~~~\n')
+        return result
