@@ -111,7 +111,7 @@ bubbletea.plot_line(
 
 st.subheader("Timestamps as string")
 st.write(data3)
-plot_line(
+bubbletea.plot_line(
     data4,
     x={
         "field": "timestamp",
