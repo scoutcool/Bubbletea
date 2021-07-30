@@ -46,7 +46,7 @@ def load_historical_data(from_symbol:str, to_symbol:str, start_timestamp:int, en
         iurl = f"{url}?fsym={from_symbol}&tsym={to_symbol}&limit={l}&aggregate=1&e={exchange}&api_key={apikey}&toTs={etime}"
         rs = _load_historical_data(iurl)
         rates.extend(rs)
-        print(f'{len(rates)}\t{iurl}')
+        # print(f'{len(rates)}\t{iurl}')
         limit -= apilimit
         et = st
     df = pd.json_normalize(rates)
