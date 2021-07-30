@@ -12,42 +12,6 @@ Whether you are a developer who builds dashboards to visualize protocol data or 
 - A simple templating system to build dashboards (built on Streamlit)
 
 
-### Highlights
-#### load_subgraph
-```
-An improved way to query data from a subgraph on The Graph network 
-- Removed the limitation of up to 1000 items per request 
-- When a graph query contains multiple entities, this function loads them concurrently
-```
-#### load_subgraphs
-```
-Querying multiple subgraphs on The Graph network concurrently.
-```
-
-#### aggregate_groupby
-```
-Aggregating data into different groups
-```
-
-#### aggregate_timeseries
-```
-Aggregating time series data by various time intervals.
-```
-
-#### plot_line
-```
-Draw a line chart.
-```
-
-
-### Live demo
-https://streamlit-flow.herokuapp.com/
-
-
-### How to install
-pipenv install
-
-
 ### Get in touch
 https://twitter.com/scout_cool
 

@@ -78,10 +78,10 @@ query = """
 with st.spinner("Loading data from the graph"):
     df = bubbletea.load_subgraph(subgraph_url, query, useBigDecimal=True)
 
-df_bond = df["data"]["bondEvents"]
+df_bond = df["bondEvents"]
 df_bond.rename(columns={"bondedAmount": "amount"}, inplace=True)
-df_rebond = df["data"]["rebondEvents"]
-df_unbond = df["data"]["unbondEvents"]
+df_rebond = df["rebondEvents"]
+df_unbond = df["unbondEvents"]
 
 i = 0
 df_amount = DataFrame()
@@ -146,7 +146,7 @@ else:
     )
     df_amount_over_round.index.names = ["round"]
     st.write(df_amount_over_round)
-    plot_line(
+    bubbletea.plot_line(
         df_amount_over_round,
         title='Stake moved over rounds',
         x={"field": "round", "title": "Round", "type":"ordinal"},# ['quantitative', 'ordinal', 'temporal', 'nominal']
