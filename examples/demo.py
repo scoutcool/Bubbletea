@@ -1,7 +1,7 @@
 import streamlit as st
 import altair as alt
 from streamlit.errors import StreamlitAPIException
-from bubbletea.transformers import urlparser as urlparser
+import bubbletea
 import os
 
 from dotenv import load_dotenv
@@ -23,7 +23,7 @@ with st.beta_expander("About Bubbletea"):
 
 display, editor = st.beta_columns((2, 1))
 
-urlvars = urlparser.parse_url_var([{'key':'demo'}])
+urlvars = bubbletea.parse_url_var([{'key':'demo'}])
 try:
     selected_demo = urlvars['demo']
 except KeyError:
@@ -39,10 +39,10 @@ with st.sidebar:
     except ValueError:
         index = 0
     selected_demo = st.selectbox('🌟 Pick one', files, index=index)
-    urlparser.update_url({'demo': selected_demo})
+    bubbletea.update_url({'demo': selected_demo})
 
 code_input = """st.header("bubbletea Demos")"""
-with open(f'./lib/{selected_demo}', 'r') as file:
+with open(f'./{selected_demo}', 'r') as file:
     code_input = file.read()
 
 with editor:
