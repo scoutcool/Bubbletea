@@ -42,7 +42,7 @@ with st.sidebar:
     bubbletea.update_url({'demo': selected_demo})
 
 code_input = """st.header("bubbletea Demos")"""
-with open(f'./{selected_demo}', 'r') as file:
+with open(f'./examples/{selected_demo}', 'r') as file:
     code_input = file.read()
 
 with editor:
