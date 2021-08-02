@@ -3,16 +3,15 @@
 import setuptools
 from os import path
 
-VERSION = "0.0.11"
-NAME="BubbleTea"
+VERSION = "0.0.1"
+NAME="BubbleTea-py"
 
 DESCRIPTION = "BubbleTea enables developers to quickly build any data applications on the emerging Web3 infrastructure."
-# LONG_DESCRIPTION = open("../README.md", "rt").read()
-# LONG_DESCRIPTION = ""
-# this_directory = path.abspath(path.dirname(__file__))
-# with open(path.join(this_directory, 'README.md')) as f:
-#     LONG_DESCRIPTION = f.read()
-LONG_DESCRIPTION = DESCRIPTION
+LONG_DESCRIPTION = open("README.md", "rt").read()
+LONG_DESCRIPTION = ""
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md')) as f:
+    LONG_DESCRIPTION = f.read()
 
 
 # import sys
@@ -30,7 +29,7 @@ LONG_DESCRIPTION = DESCRIPTION
 
 
 setuptools.setup(
-    name="bubbletea",
+    name=NAME,
     version=VERSION,
     author="Supermax Tech.",
     author_email="hello@scout.cool",
@@ -38,6 +37,8 @@ setuptools.setup(
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     url="https://github.com/scout-cool/BubbleTea",
+    # packages=['bubbletea-py'],
+    # package_dir={'bubbletea-py': './'},
     packages=setuptools.find_packages(exclude=["tests", "tests.*"]),
     install_requires=[
         'streamlit==0.82.0','graphql-core==3.1.5', 'st-flashcard==0.0.4', 'python-dotenv==0.18.0'
