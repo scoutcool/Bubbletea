@@ -12,7 +12,7 @@ DEFAULT_Y: alt.Y = {
 }
 
 FMT_DATE = "%Y/%m/%d"  # yyyy/mm/dd
-FMT_FULL_DATETIME = "%Y/%m/%d %Y %I:%M %p"  # yyyy/mm/dd HH:MM a/pm
+FMT_FULL_DATETIME = "%Y/%m/%d %I:%M %p"  # yyyy/mm/dd HH:MM a/pm
 
 
 @st.cache
