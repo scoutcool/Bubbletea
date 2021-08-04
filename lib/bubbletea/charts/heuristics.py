@@ -12,6 +12,7 @@ DEFAULT_Y: alt.Y = {
 }
 
 FMT_DATE = "%Y/%m/%d"  # yyyy/mm/dd
+FMT_HOURLY_DATETIME = "%Y/%m/%d %I%p"  # yyyy/mm/dd HHa/pm
 FMT_FULL_DATETIME = "%Y/%m/%d %I:%M %p"  # yyyy/mm/dd HH:MM a/pm
 
 
@@ -36,7 +37,16 @@ def is_too_large(df: DataFrame):
 
 
 def guess_time_axis(df: DataFrame):
-    fmt = FMT_FULL_DATETIME if df.apply(lambda d: d.hour != 0).any() else FMT_DATE
+    has_nonzero_hours = df.apply(lambda d: d.hour != 0).any()
+    has_nonzero_minutes = df.apply(lambda d: d.minute != 0).any()
+
+    if has_nonzero_minutes:
+        fmt = FMT_FULL_DATETIME
+    elif has_nonzero_hours:
+        fmt = FMT_HOURLY_DATETIME
+    else:
+        fmt = FMT_DATE
+
     return {"format": fmt, "labelOverlap": "greedy"}
 
 
