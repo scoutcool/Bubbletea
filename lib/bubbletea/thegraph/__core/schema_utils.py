@@ -9,7 +9,6 @@ def get_max_items_per_page():
   return ITEMS_PER_PAGE
 
 def process_response_to_json(response):
-    text = json.loads(response.text)
     if response.status_code != 200:
         raise ValueError(f'The Graph Connection Error: {response.status_code}')
     text = json.loads(response.text)

@@ -32,7 +32,50 @@ query_aave = """
      }
 }
 """
-data = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
+
+url = "https://api.thegraph.com/subgraphs/name/sushiswap/exchange"
+query = """
+{
+        tokens{
+            symbol
+        }
+        pairHourDatas(
+            where:{date_gte:1628096553, date_lt:1628182953}
+            bypassPagination: True
+        ){
+            date
+            pair{
+                token0{
+                    symbol
+                }
+                token1{
+                    symbol
+                }
+            }
+            reserve0
+            reserve1
+            volumeUSD
+        }
+        mints(
+            where:{timestamp_gte:1628096553, timestamp_lt:1628182953},
+            bypassPagination: True
+        ){
+            liquidity
+            amount0
+            amount1
+            amountUSD
+            pair{
+                token0{
+                    symbol
+                }
+                token1{
+                    symbol
+                }
+            }
+        }
+    }
+"""
+data = bubbletea.load_subgraph(url, query)
 print(data)
 
 # url_compoundv2_subgraph = 'https://api.thegraph.com/subgraphs/name/graphprotocol/compound-v2'
