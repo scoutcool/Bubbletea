@@ -1,3 +1,5 @@
+from altair.vegalite.v4.api import value
+from altair.vegalite.v4.schema.channels import Opacity
 from altair.vegalite.v4.schema.core import StringFieldDefWithCondition
 import streamlit as st
 import altair as alt
@@ -117,7 +119,9 @@ def plot(
             ),
             opacity=alt.condition(hover_selection, alt.value(1), alt.value(0)),
             tooltip=[
-                alt.StringFieldDefWithCondition(**x_config, format=x_axis_config["format"]),
+                alt.StringFieldDefWithCondition(
+                    **x_config, format=x_axis_config["format"]
+                ),
                 *list(
                     map(
                         lambda y_config: y_config["config"]["title"]
@@ -189,6 +193,7 @@ def plot(
         main = getattr(base, marker)(
             color=color,
             strokeJoin="round",
+            opacity=(0.75 if len(ys_config_all) > 1 else 1.0),
             xOffset=(5 * index if marker == "mark_bar" else 0),
         )
 
