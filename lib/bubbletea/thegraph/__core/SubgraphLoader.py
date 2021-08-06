@@ -42,9 +42,10 @@ class SubgraphLoader:
         if self.types == None:
             self.types = self.__load_schema()
         df = pd.json_normalize(data)
-        en = entity.name
-        if en.endswith('s'):
-            en = f"{en[0:1].upper()}{en[1:len(en) - 1]}"
+        # en = schema_utils.find_column_type(en, self.types)
+        en = schema_utils.find_column_type(f'Query.{entity.name}', self.types)
+        # if en.endswith('s'):
+        #     en = f"{en[0:1].upper()}{en[1:len(en) - 1]}"
 
         columns = df.columns
         astypes = {}

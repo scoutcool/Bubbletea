@@ -30,14 +30,18 @@ def _find_entity(entityName, types):
     return None
 
 def _find_field_type(fieldName, entity):
-    for f in entity['fields']:
-        if f['name'] == fieldName:
-            if f['type'] != None:
-                t = f['type']
-                if t['name'] != None:
-                    return t['name']
-                return _ultimate_ofType(t)
-            return 
+    if entity == None:
+      return None
+    # print(f'??? _find_field_type: {fieldName} {entity}')
+    if 'fields' in entity.keys():
+      for f in entity['fields']:
+          if f['name'] == fieldName:
+              if f['type'] != None:
+                  t = f['type']
+                  if t['name'] != None:
+                      return t['name']
+                  return _ultimate_ofType(t)
+              return 
     return None
 
 def find_column_type(entityPath, types):
@@ -46,6 +50,7 @@ def find_column_type(entityPath, types):
         en = segs[0]
         field = segs[1]
         entity = _find_entity(en, types)
+        # print(f"??? find_column_type\t{field} {entity}")
         fieldType = _find_field_type(field, entity)
         if fieldType == None:
             return None
