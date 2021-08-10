@@ -7,6 +7,7 @@ from .charts import line as line
 from .charts import area as area
 from .charts import bar as bar
 from flash_card import flash_card
+import altair as alt
 
 # CSS hack to hide menu from streamlit
 st.markdown(
@@ -37,3 +38,6 @@ plot_text = flash_card
 
 parse_url_var = urlparser.parse_url_var
 update_url = urlparser.update_url
+
+
+alt.renderers.set_embed_options(actions=False)
