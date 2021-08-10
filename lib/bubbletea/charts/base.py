@@ -3,7 +3,7 @@ from altair.vegalite.v4.schema.channels import Opacity
 from altair.vegalite.v4.schema.core import StringFieldDefWithCondition
 import streamlit as st
 import altair as alt
-from pandas import DataFrame
+from pandas import DataFrame, melt
 
 from .heuristics import guess_x_config, guess_y_config, DEFAULT_X
 from .colors import PALETTE
@@ -73,6 +73,8 @@ def plot(
 
     guessed_x_config = guess_x_config(x, frames)
     x_config = guessed_x_config["config"]
+    x_tooltip_config = x_config.copy()
+    del x_tooltip_config["timeUnit"]
     x_axis_config = guessed_x_config["axis"]
 
     ys_config_left = list(map(lambda y: guess_y_config(y, frames), yLeft))
@@ -120,7 +122,7 @@ def plot(
             opacity=alt.condition(hover_selection, alt.value(1), alt.value(0)),
             tooltip=[
                 alt.StringFieldDefWithCondition(
-                    **x_config, format=x_axis_config["format"]
+                    **x_tooltip_config, format=x_axis_config["format"]
                 ),
                 *list(
                     map(
@@ -137,7 +139,7 @@ def plot(
 
     multi_rules = (
         alt.Chart(frames)
-        .mark_rule(color=palette[0])
+        .mark_rule(color=palette[0], xOffset=0.5)
         .encode(
             x=alt.X(
                 **x_config,
@@ -194,13 +196,10 @@ def plot(
             color=color,
             strokeJoin="round",
             opacity=(0.75 if len(ys_config_all) > 1 else 1.0),
-            xOffset=(5 * index if marker == "mark_bar" else 0),
         )
 
         # hover annotations
-        hover_point = base.mark_point(
-            color=color, xOffset=(5 * index if marker == "mark_bar" else 0)
-        ).encode(
+        hover_point = base.mark_point(color=color).encode(
             y=alt.Y(
                 axis=alt.Axis(title=""),
                 **columnDef,
@@ -209,10 +208,7 @@ def plot(
         )
 
         # sticky annotations
-        sticky_points = base.mark_point(
-            color=color,
-            xOffset=(5 * index if marker == "mark_bar" else 0),
-        ).encode(
+        sticky_points = base.mark_point(color=color).encode(
             y=alt.Y(
                 axis=alt.Axis(title=""),
                 **columnDef,
@@ -222,7 +218,7 @@ def plot(
 
         return {
             "main": main,
-            "annotations": [hover_point, sticky_points],
+            "annotations": [] if marker == "mark_bar" else [hover_point, sticky_points],
         }
 
     charts = {"yLeft": [], "yRight": []}

@@ -1,4 +1,6 @@
 import datetime
+from altair.utils.schemapi import Undefined
+from altair.vegalite.v4.schema.core import TickConfig
 import streamlit as st
 import altair as alt
 from pandas import DataFrame, to_datetime, to_numeric
@@ -37,23 +39,45 @@ def is_too_large(df: DataFrame):
 
 
 def guess_time_axis(df: DataFrame):
+    time_delta = (df.max() - df.min()).days + 1
+
     has_nonzero_hours = df.apply(lambda d: d.hour != 0).any()
     has_nonzero_minutes = df.apply(lambda d: d.minute != 0).any()
     has_different_year_from_current = df.apply(
         lambda d: d.year != datetime.date.today().year
     ).any()
 
+    type = "temporal"
+    timeUnit = "yearmonthdatehoursminutes"
+    tickCount = time_delta
+    labelAngle = 0
+
     if has_nonzero_minutes:
         fmt = FMT_FULL_DATETIME
+        tickCount = time_delta * (4 if time_delta < 8 else 1)
+        labelAngle = -45
     elif has_nonzero_hours:
         fmt = FMT_HOURLY_DATETIME
+        timeUnit = "yearmonthdatehours"
+        tickCount = time_delta * (4 if time_delta < 8 else 1)
+        labelAngle = -45
     else:
         fmt = FMT_DATE
+        timeUnit = "yearmonthdate"
 
     if has_different_year_from_current:
         fmt = "%Y/" + fmt
 
-    return {"format": fmt, "labelOverlap": "greedy"}
+    return {
+        "axis": {
+            "format": fmt,
+            "labelOverlap": False,
+            "tickCount": tickCount,
+            "labelAngle": labelAngle,
+        },
+        "type": type,
+        "timeUnit": timeUnit,
+    }
 
 
 def process_field(df: DataFrame, fieldName: str):
@@ -91,10 +115,7 @@ def process_field(df: DataFrame, fieldName: str):
             timestamp_col_as_datetime = to_datetime(column, errors="raise", unit="s")
             return [
                 timestamp_col_as_datetime,
-                {
-                    "type": "temporal",
-                    "axis": guess_time_axis(timestamp_col_as_datetime),
-                },
+                guess_time_axis(timestamp_col_as_datetime),
             ]
         except:
             print("cannot convert to date")
@@ -106,10 +127,7 @@ def process_field(df: DataFrame, fieldName: str):
 
         return [
             general_col_as_datetime,
-            {
-                "type": "temporal",
-                "axis": guess_time_axis(general_col_as_datetime),
-            },
+            guess_time_axis(general_col_as_datetime),
         ]
     except:
         print("cannot convert to date")
