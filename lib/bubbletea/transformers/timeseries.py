@@ -90,6 +90,13 @@ def aggregate_timeseries(
         tmin = start_timestamp
     if end_timestamp != None:
         tmax = end_timestamp
+    
+
+    unit = 's'
+    if len(str(tmin)) == 13:
+        tmin /= 1000
+        tmax /= 1000
+        unit = 'ms'
 
     if interval == TimeseriesInterval.HOURLY:
         tmin = pd.to_datetime(math.floor(tmin / 3600) * 3600, unit="s")
@@ -110,7 +117,7 @@ def aggregate_timeseries(
     # print(f'time frame {tmin} - {tmax}')
     # print(df[time_column].dtype)
     if not isinstance(df[time_column], DatetimeIndex):
-        df[time_column] = df[time_column].apply(lambda x: pd.to_datetime(x, unit="s"))
+        df[time_column] = pd.to_datetime(df[time_column], unit=unit)
 
     df = df.set_index(time_column)
     # print(df)
@@ -118,14 +125,13 @@ def aggregate_timeseries(
     result_df = None
     i = 0
     for c in columns:
-
         if c.type != None:
             if c.type == ColumnType.bigdecimal:
                 df[c.name] = df[c.name].apply(lambda x: Decimal(x))
             else:
                 df[c.name] = df[c.name].astype(c.type, copy=False, errors="ignore")
-
-        r = df[[c.name]].resample(interval)
+                
+        r = df[c.name].resample(interval)
         f = getattr(r, c.aggregate_method)
 
         _df = f()
