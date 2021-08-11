@@ -32,8 +32,24 @@ query_aave = """
      }
 }
 """
-data = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
-print(data)
+
+url = "https://api.thegraph.com/subgraphs/name/sushiswap/exchange"
+query = """
+{
+        factories {
+            id
+            volumeUSD
+        }
+    }
+"""
+data = bubbletea.load_subgraph(url, query)
+# print(data)
+df = data['factories']
+print(df.dtypes)
+
+# df_daydata = pd.DataFrame(data = df['dayData'][0])
+# print(df_daydata)
+# print(df_daydata.dtypes)
 
 # url_compoundv2_subgraph = 'https://api.thegraph.com/subgraphs/name/graphprotocol/compound-v2'
 # query_compoundv2 = """

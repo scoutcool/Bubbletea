@@ -9,7 +9,6 @@ def get_max_items_per_page():
   return ITEMS_PER_PAGE
 
 def process_response_to_json(response):
-    text = json.loads(response.text)
     if response.status_code != 200:
         raise ValueError(f'The Graph Connection Error: {response.status_code}')
     text = json.loads(response.text)
@@ -31,14 +30,18 @@ def _find_entity(entityName, types):
     return None
 
 def _find_field_type(fieldName, entity):
-    for f in entity['fields']:
-        if f['name'] == fieldName:
-            if f['type'] != None:
-                t = f['type']
-                if t['name'] != None:
-                    return t['name']
-                return _ultimate_ofType(t)
-            return 
+    if entity == None:
+      return None
+    # print(f'??? _find_field_type: {fieldName} {entity}')
+    if 'fields' in entity.keys():
+      for f in entity['fields']:
+          if f['name'] == fieldName:
+              if f['type'] != None:
+                  t = f['type']
+                  if t['name'] != None:
+                      return t['name']
+                  return _ultimate_ofType(t)
+              return 
     return None
 
 def find_column_type(entityPath, types):
@@ -47,6 +50,7 @@ def find_column_type(entityPath, types):
         en = segs[0]
         field = segs[1]
         entity = _find_entity(en, types)
+        # print(f"??? find_column_type\t{field} {entity}")
         fieldType = _find_field_type(field, entity)
         if fieldType == None:
             return None

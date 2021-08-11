@@ -1,11 +1,9 @@
 import datetime
 from decimal import Decimal
-from altair.vegalite.v4.api import ConcatChart
 from pandas.core.frame import DataFrame
 import streamlit as st
 import time
 import bubbletea
-import bubbletea.transformers.timeseries as ts
 
 st.header("LIVEPEER Stake Movement")
 
@@ -97,28 +95,22 @@ if len(df_amount) == 0:
     st.write('No data vailable')
 else:
     df_amount = df_amount.reset_index()
-
-    df_amount = (
-        df_bond[["timestamp", "amount", "round.id"]]
-        .append(df_rebond[["timestamp", "amount", "round.id"]])
-        .append(df_unbond[["timestamp", "amount", "round.id"]])
-        .reset_index()
-    )
-    df_amount_over_time = ts.aggregate_timeseries(
+    df_amount_over_time = bubbletea.aggregate_timeseries(
         df_amount,
         time_column="timestamp",
-        interval=ts.TimeseriesInterval.DAILY,
+        interval=bubbletea.TimeseriesInterval.DAILY,
         columns=[
-            ts.ColumnConfig(
+            bubbletea.ColumnConfig(
                 name="amount",
-                type=ts.ColumnType.bigdecimal,
-                aggregate_method=ts.AggregateMethod.SUM,
+                type=bubbletea.ColumnType.bigdecimal,
+                aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=Decimal(0.0),
             )
         ],
     )
     df_amount_over_time.index.names = ["time"]
     st.subheader("Stake moved over time")
+    st.write(df_amount_over_time)
     bubbletea.plot_line(
         df_amount_over_time,
         x={
@@ -132,14 +124,14 @@ else:
         ],
     )
 
-    df_amount_over_round = ts.aggregate_groupby(
+    df_amount_over_round = bubbletea.aggregate_groupby(
         df_amount,
         by_column="round.id",
         columns=[
-            ts.ColumnConfig(
+            bubbletea.ColumnConfig(
                 name="amount",
-                type=ts.ColumnType.bigdecimal,
-                aggregate_method=ts.AggregateMethod.SUM,
+                type=bubbletea.ColumnType.bigdecimal,
+                aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=Decimal(0.0),
             )
         ],
@@ -182,20 +174,20 @@ else:
 
 
     df_transcoders = process_transcoders()
-    df_loss_gains = ts.aggregate_groupby(
+    df_loss_gains = bubbletea.aggregate_groupby(
         df_transcoders,
         "transcoder",
         columns=[
-            ts.ColumnConfig(
+            bubbletea.ColumnConfig(
                 name="loss",
-                type=ts.ColumnType.bigdecimal,
-                aggregate_method=ts.AggregateMethod.SUM,
+                type=bubbletea.ColumnType.bigdecimal,
+                aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=Decimal(0.0),
             ),
-            ts.ColumnConfig(
+            bubbletea.ColumnConfig(
                 name="gain",
-                type=ts.ColumnType.bigdecimal,
-                aggregate_method=ts.AggregateMethod.SUM,
+                type=bubbletea.ColumnType.bigdecimal,
+                aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=Decimal(0.0),
             ),
         ],

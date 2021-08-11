@@ -42,9 +42,10 @@ class SubgraphLoader:
         if self.types == None:
             self.types = self.__load_schema()
         df = pd.json_normalize(data)
-        en = entity.name
-        if en.endswith('s'):
-            en = f"{en[0:1].upper()}{en[1:len(en) - 1]}"
+        # en = schema_utils.find_column_type(en, self.types)
+        en = schema_utils.find_column_type(f'Query.{entity.name}', self.types)
+        # if en.endswith('s'):
+        #     en = f"{en[0:1].upper()}{en[1:len(en) - 1]}"
 
         columns = df.columns
         astypes = {}
@@ -83,7 +84,8 @@ class SubgraphLoader:
             if initialPage:
                 query += e.initialQuery
                 has_entity = True
-            elif e.bypassPagination:
+            elif e.bypassPagination and e.lastId != None:
+                # print(f"???_load_page {e.name}\t{e.lastId}")
                 eq = e.paginationQuery.replace('__LASTID__', e.lastId)
                 query += str(eq)
                 has_entity = True
@@ -107,8 +109,8 @@ class SubgraphLoader:
                         progress[k] = l + len(e.data)
 
                     if e.bypassPagination:
-                        # print(f'~~~{k}\t{l}~~~\n{d}\n\n')
                         e.lastId = None if l == 0 else d[l-1]['id']
+                        # print(f'~~~{e.name}\t{k}\t{l}\t{e.lastId}~~~\n{d}\n\n')
                         if l >= schema_utils.get_max_items_per_page():
                             has_more_page = True 
         if progressCallback != None:
