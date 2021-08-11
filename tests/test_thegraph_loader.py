@@ -2,8 +2,6 @@ import os, sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from lib import bubbletea
-from lib.bubbletea.thegraph.__core import schema_utils
-import pandas as pd
 import streamlit as st
 
 
