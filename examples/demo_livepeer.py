@@ -1,5 +1,5 @@
 import datetime
-from decimal import Decimal
+import datetime
 from pandas.core.frame import DataFrame
 import streamlit as st
 import time
@@ -102,9 +102,8 @@ else:
         columns=[
             bubbletea.ColumnConfig(
                 name="amount",
-                type=bubbletea.ColumnType.bigdecimal,
                 aggregate_method=bubbletea.AggregateMethod.SUM,
-                na_fill_value=Decimal(0.0),
+                na_fill_value=0.0,
             )
         ],
     )
@@ -130,9 +129,8 @@ else:
         columns=[
             bubbletea.ColumnConfig(
                 name="amount",
-                type=bubbletea.ColumnType.bigdecimal,
                 aggregate_method=bubbletea.AggregateMethod.SUM,
-                na_fill_value=Decimal(0.0),
+                na_fill_value=0.0,
             )
         ],
     )
@@ -168,7 +166,7 @@ else:
         df3.rename(columns={"delegate.id": "transcoder", "amount": "gain"}, inplace=True)
         df = df0.append(df1).append(df1).append(df2).append(df3)
 
-        df.fillna(Decimal(0.0), inplace=True)
+        df.fillna(0.0, inplace=True)
         df.reset_index(inplace=True)
         return df
 
@@ -180,15 +178,13 @@ else:
         columns=[
             bubbletea.ColumnConfig(
                 name="loss",
-                type=bubbletea.ColumnType.bigdecimal,
                 aggregate_method=bubbletea.AggregateMethod.SUM,
-                na_fill_value=Decimal(0.0),
+                na_fill_value=0.0,
             ),
             bubbletea.ColumnConfig(
                 name="gain",
-                type=bubbletea.ColumnType.bigdecimal,
                 aggregate_method=bubbletea.AggregateMethod.SUM,
-                na_fill_value=Decimal(0.0),
+                na_fill_value=0.0,
             ),
         ],
     )
