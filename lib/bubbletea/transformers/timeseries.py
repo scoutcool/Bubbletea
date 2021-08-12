@@ -131,7 +131,7 @@ def aggregate_timeseries(
             else:
                 df[c.name] = df[c.name].astype(c.type, copy=False, errors="ignore")
                 
-        r = df[c.name].resample(interval)
+        r = df[[c.name]].resample(interval)
         f = getattr(r, c.aggregate_method)
 
         _df = f()
