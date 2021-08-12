@@ -2,6 +2,8 @@ import decimal
 import math
 import os, sys
 
+from numpy import record
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
@@ -30,9 +32,12 @@ def is_json(candidate):
 # print(df)
 
 
-data = [{"index":0,"timestamp":1628250163000,"amount":502.0,"round.id":"2251"},{"index":1,"timestamp":1628321616000,"amount":80.40244458,"round.id":"2252"},{"index":2,"timestamp":1628286666000,"amount":574.4757487141,"round.id":"2252"},{"index":3,"timestamp":1628414967000,"amount":115.8754306503,"round.id":"2254"},{"index":4,"timestamp":1628637067000,"amount":323.2267,"round.id":"2257"},{"index":5,"timestamp":1628359880000,"amount":80.0,"round.id":"2253"},{"index":6,"timestamp":1628462086000,"amount":261.0005837339,"round.id":"2254"},{"index":7,"timestamp":1628195442000,"amount":307.42155,"round.id":"2251"},{"index":8,"timestamp":1628557953000,"amount":89.93207518,"round.id":"2255"},{"index":9,"timestamp":1628649442000,"amount":8081.3108643392,"round.id":"2257"},{"index":10,"timestamp":1628286981000,"amount":59.55941375,"round.id":"2252"},{"index":11,"timestamp":1628203363000,"amount":711.85553,"round.id":"2251"},{"index":12,"timestamp":1628474912000,"amount":500.30644619,"round.id":"2254"},{"index":13,"timestamp":1628523512000,"amount":1400.5852135196,"round.id":"2255"},{"index":14,"timestamp":1628303809000,"amount":247.5483848072,"round.id":"2252"},{"index":15,"timestamp":1628429503000,"amount":59.0,"round.id":"2254"},{"index":16,"timestamp":1628162884000,"amount":365.0,"round.id":"2250"},{"index":17,"timestamp":1628364832000,"amount":148.8,"round.id":"2253"},{"index":18,"timestamp":1628301394000,"amount":243.0788,"round.id":"2252"},{"index":19,"timestamp":1628439965000,"amount":132.7333,"round.id":"2254"},{"index":20,"timestamp":1628466867000,"amount":119.6223925114,"round.id":"2254"},{"index":21,"timestamp":1628637810000,"amount":12.1610144017,"round.id":"2257"},{"index":22,"timestamp":1628389373000,"amount":135.0,"round.id":"2253"},{"index":23,"timestamp":1628606805000,"amount":1400.5852135196,"round.id":"2256"},{"index":0,"timestamp":1628241274000,"amount":49.98785361,"round.id":"2251"},{"index":0,"timestamp":1628406746000,"amount":37.5,"round.id":"2253"},{"index":1,"timestamp":1628525158000,"amount":7184.8985895658,"round.id":"2255"},{"index":2,"timestamp":1628228928000,"amount":49.98785361,"round.id":"2251"},{"index":3,"timestamp":1628312097000,"amount":2000.0,"round.id":"2252"},{"index":4,"timestamp":1628113308000,"amount":248.1050947031,"round.id":"2250"},{"index":5,"timestamp":1628486611000,"amount":20.0,"round.id":"2255"},{"index":6,"timestamp":1628435525000,"amount":756.0438343424,"round.id":"2254"},{"index":7,"timestamp":1628258574000,"amount":2500.0,"round.id":"2252"},{"index":8,"timestamp":1628441061000,"amount":1097.4049817962,"round.id":"2254"},{"index":9,"timestamp":1628633872000,"amount":1000.0,"round.id":"2256"},{"index":10,"timestamp":1628562693000,"amount":5500.0,"round.id":"2256"},{"index":11,"timestamp":1628339846000,"amount":711.85553,"round.id":"2253"},{"index":12,"timestamp":1628646300000,"amount":5700.8194566415,"round.id":"2257"},{"index":13,"timestamp":1628307648000,"amount":50.0,"round.id":"2252"},{"index":14,"timestamp":1628352185000,"amount":177.4237207849,"round.id":"2253"}]
+data = {"columns":["index","timestamp","amount","round.id"],"index":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],"data":[[0,1628250163000,502.0,"2251"],[1,1628321616000,80.40244458,"2252"],[2,1628286666000,574.4757487141,"2252"],[3,1628414967000,115.8754306503,"2254"],[4,1628637067000,323.2267,"2257"],[5,1628359880000,80.0,"2253"],[6,1628462086000,261.0005837339,"2254"],[7,1628195442000,307.42155,"2251"],[8,1628557953000,89.93207518,"2255"],[9,1628649442000,8081.3108643392,"2257"],[10,1628286981000,59.55941375,"2252"],[11,1628203363000,711.85553,"2251"],[12,1628474912000,500.30644619,"2254"],[13,1628523512000,1400.5852135196,"2255"],[14,1628303809000,247.5483848072,"2252"],[15,1628429503000,59.0,"2254"],[16,1628162884000,365.0,"2250"],[17,1628364832000,148.8,"2253"],[18,1628301394000,243.0788,"2252"],[19,1628439965000,132.7333,"2254"],[20,1628466867000,119.6223925114,"2254"],[21,1628637810000,12.1610144017,"2257"],[22,1628389373000,135.0,"2253"],[23,1628606805000,1400.5852135196,"2256"],[0,1628241274000,49.98785361,"2251"],[0,1628406746000,37.5,"2253"],[1,1628525158000,7184.8985895658,"2255"],[2,1628228928000,49.98785361,"2251"],[3,1628312097000,2000.0,"2252"],[4,1628113308000,248.1050947031,"2250"],[5,1628486611000,20.0,"2255"],[6,1628435525000,756.0438343424,"2254"],[7,1628258574000,2500.0,"2252"],[8,1628441061000,1097.4049817962,"2254"],[9,1628633872000,1000.0,"2256"],[10,1628562693000,5500.0,"2256"],[11,1628339846000,711.85553,"2253"],[12,1628646300000,5700.8194566415,"2257"],[13,1628307648000,50.0,"2252"],[14,1628352185000,177.4237207849,"2253"]]}
 
-df_amount = pd.DataFrame(data)
+df_amount = pd.DataFrame(data=data['data'],index=data['index'], columns=data['columns'])
+df_amount['timestamp'] = pd.to_datetime(df_amount['timestamp'],unit='ms')
+df_amount.set_index('timestamp', inplace=True)
+
 df_amount_over_time = bubbletea.aggregate_timeseries(
         df_amount,
         time_column="timestamp",
@@ -42,12 +47,11 @@ df_amount_over_time = bubbletea.aggregate_timeseries(
                 name="amount",
                 type=bubbletea.ColumnType.bigdecimal,
                 aggregate_method=bubbletea.AggregateMethod.SUM,
-                na_fill_value=decimal.Decimal(0.0),
+                na_fill_value=0.0,
             )
         ],
     )
 print(df_amount_over_time)
-pass
 
 weekly_data_sets = [
     {
