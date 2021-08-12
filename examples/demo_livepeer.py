@@ -102,6 +102,7 @@ else:
         columns=[
             bubbletea.ColumnConfig(
                 name="amount",
+                type=bubbletea.ColumnType.bigdecimal,
                 aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=0.0,
             )
@@ -129,6 +130,7 @@ else:
         columns=[
             bubbletea.ColumnConfig(
                 name="amount",
+                type=bubbletea.ColumnType.bigdecimal,
                 aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=0.0,
             )
@@ -178,11 +180,13 @@ else:
         columns=[
             bubbletea.ColumnConfig(
                 name="loss",
+                type=bubbletea.ColumnType.bigdecimal,
                 aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=0.0,
             ),
             bubbletea.ColumnConfig(
                 name="gain",
+                type=bubbletea.ColumnType.bigdecimal,
                 aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=0.0,
             ),
