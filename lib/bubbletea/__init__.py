@@ -23,6 +23,7 @@ AggregateMethod = ts.AggregateMethod
 NaInterpolationMethod = ts.NaInterpolationMethod
 ColumnType = ts.ColumnType
 ColumnConfig = ts.ColumnConfig
+SubgraphDef = thegraph.SubgraphDef
 aggregate_groupby = ts.aggregate_groupby
 aggregate_timeseries = ts.aggregate_timeseries
 
