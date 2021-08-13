@@ -127,11 +127,11 @@ def aggregate_timeseries(
     for c in columns:
         if c.type != None:
             if c.type == ColumnType.bigdecimal:
-                df[c.name] = df[c.name].apply(lambda x: Decimal(x))
+                df[c.name] = df[c.name].astype('float64', copy=False, errors="ignore")
             else:
                 df[c.name] = df[c.name].astype(c.type, copy=False, errors="ignore")
                 
-        r = df[c.name].resample(interval)
+        r = df[[c.name]].resample(interval)
         f = getattr(r, c.aggregate_method)
 
         _df = f()

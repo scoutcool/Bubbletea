@@ -26,7 +26,7 @@ Return:
 {
     'url': url,
     'data': {
-        <entityName>: <DataFrame_of_items_from_the_graph>
+        <Entity_name>: <DataFrame_of_items_from_the_graph>
     }
 }
 ```
@@ -46,24 +46,27 @@ Return:
 ```
 {
     <url1>: {
-        <entityName>: <DataFrame_of_items_from_the_graph>
+        <Entity_name>: <DataFrame_of_items_from_the_graph>
     },
     <url2>: {
-        <entityName>: <DataFrame_of_items_from_the_graph>
+        <Entity_name>: <DataFrame_of_items_from_the_graph>
     }
 }
 """
 def load_subgraphs(defs:list[SubgraphDef]):
     results = {}
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(defs)) as executor:
-        future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.progressCallback, d.useBigDecimal) for d in defs}
-        for thread in executor._threads:
-            add_report_ctx(thread)
+        future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.progressCallback, d.useBigDecimal): d for d in defs}
+        # future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.progressCallback, d.useBigDecimal) for d in defs}
+        # for thread in executor._threads:
+        #     add_report_ctx(thread)
 
         for future in concurrent.futures.as_completed(future_to_url):
+            d = future_to_url[future]
             try:
                 data = future.result()
-                results[data['url']] = data['data']
+                results[d.url] = data
             except Exception as e:
                 st.exception(e)
     return results

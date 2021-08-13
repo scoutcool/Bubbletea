@@ -7,10 +7,9 @@ import streamlit as st
 
 st.subheader('Single Subgraph')
 url_aave_subgraph = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v2'
-query_aave = """
-{
+query_aave = """{
     deposits(
-        where:{timestamp_gt:1609459200, timestamp_lt:1609462800}
+        where:{timestamp_gte:1609459200, timestamp_lt:1610236800}
         orderBy: timestamp
         orderDirection: desc
         bypassPagination: true
@@ -33,38 +32,29 @@ query_aave = """
 }
 """
 
-url = "https://api.thegraph.com/subgraphs/name/sushiswap/exchange"
-query = """
-{
-        factories {
-            id
-            volumeUSD
-        }
-    }
-"""
-data = bubbletea.load_subgraph(url, query)
+# data = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
 # print(data)
-df = data['factories']
-print(df.dtypes)
+# df = data['factories']
+# print(df.dtypes)
 
 # df_daydata = pd.DataFrame(data = df['dayData'][0])
 # print(df_daydata)
 # print(df_daydata.dtypes)
 
-# url_compoundv2_subgraph = 'https://api.thegraph.com/subgraphs/name/graphprotocol/compound-v2'
-# query_compoundv2 = """
-# {
-# 	mintEvents(
-#         where:{blockTime_gte:1609459200, blockTime_lt:1609462800}
-#         bypassPagination: true
-#     ) {
-# 	    cTokenSymbol
-#         amount
-#         underlyingAmount
-#         blockTime
-# 	}
-# }
-# """
+url_compoundv2_subgraph = 'https://api.thegraph.com/subgraphs/name/graphprotocol/compound-v2'
+query_compoundv2 = """
+{
+	mintEvents(
+        where:{blockTime_gte:1609459200, blockTime_lt:1610236800}
+        bypassPagination: true
+    ) {
+	    cTokenSymbol
+        amount
+        underlyingAmount
+        blockTime
+	}
+}
+"""
 # data = gl.load_subgraph(url_compoundv2_subgraph, query_compoundv2)
 
 
@@ -80,10 +70,20 @@ print(df.dtypes)
 
 # st.markdown('---')
 # st.subheader('Multiple Subgraphs')
-# data = gl.load_subgraphs([
-#     gl.SubgraphDef(url=url_aave_subgraph, query=query_aave), 
-#     gl.SubgraphDef( url=url_compoundv2_subgraph, query=query_compoundv2)
-#     ])
+data = bubbletea.load_subgraphs([
+    bubbletea.SubgraphDef(url=url_aave_subgraph, query=query_aave), 
+    bubbletea.SubgraphDef(url=url_compoundv2_subgraph, query=query_compoundv2)
+    ])
+    
+df_aave_deposits = data[url_aave_subgraph]['deposits']
+df_aave_flashloans = data[url_aave_subgraph]['flashLoans']
+df_compound_mints = data[url_compoundv2_subgraph]['mintEvents']
+print(df_aave_deposits)
+print(df_aave_deposits.dtypes)
+print(df_aave_flashloans)
+print(df_aave_flashloans.dtypes)
+print(df_compound_mints)
+print(df_compound_mints.dtypes)
 
 # for k in data.keys():
 #     st.subheader(k)

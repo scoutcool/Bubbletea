@@ -1,12 +1,13 @@
-from altair.vegalite.v4.api import value
-from altair.vegalite.v4.schema.channels import Opacity
-from altair.vegalite.v4.schema.core import StringFieldDefWithCondition
+from altair.utils.schemapi import Undefined
 import streamlit as st
 import altair as alt
-from pandas import DataFrame, melt
+from pandas import DataFrame, set_option
 
 from .heuristics import guess_x_config, guess_y_config, DEFAULT_X
 from .colors import PALETTE
+
+# Suppress SettingWithCopyWarning from pandas
+set_option("mode.chained_assignment", None)
 
 
 def plot(
@@ -73,8 +74,7 @@ def plot(
 
     guessed_x_config = guess_x_config(x, frames)
     x_config = guessed_x_config["config"]
-    x_tooltip_config = x_config.copy()
-    del x_tooltip_config["timeUnit"]
+    x_tooltip_config = {**x_config, "timeUnit": Undefined}
     x_axis_config = guessed_x_config["axis"]
 
     ys_config_left = list(map(lambda y: guess_y_config(y, frames), yLeft))

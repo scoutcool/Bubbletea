@@ -90,19 +90,21 @@ def process_field(df: DataFrame, fieldName: str):
             column = try_numerify
 
     if is_numeric_dtype(column):
+        is_tiny = column.apply(lambda i: i > -1 and i < 1).all()
+
         axis_config = {
-            "format": ".2f",
+            "format": ".2f" if is_tiny else ".0d",
         }
 
         if is_large(column):
             axis_config = {
-                "format": ".2s",
+                "format": ".0s",
                 "labelExpr": "replace(datum.label, 'G', 'B')",
             }
 
         if is_too_large(column):
             axis_config = {
-                "format": ".2e",
+                "format": ".0e",
             }
 
         if (column < MIN_DATETIME).any() or (column > MAX_DATETIME).any():
