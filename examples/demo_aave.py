@@ -1,5 +1,6 @@
 import bubbletea
 import streamlit as st
+import pandas as dp
 import datetime
 import time
 import os
@@ -98,7 +99,6 @@ def get_token_deposits():
     df['amount'] = df['amount'] / (10 ** df['reserve.decimals'])
     return df
 
-@st.cache(show_spinner=False)
 def process_deposits(df_deposits, df_rates):
     df_hourly = bubbletea.aggregate_timeseries(
         data=df_deposits,
@@ -116,7 +116,6 @@ def process_deposits(df_deposits, df_rates):
     df_hourly = df_hourly.merge(df_rates, left_index=True, right_index=True)
     df_hourly["volume"] = df_hourly["amount"] * df_hourly["rate"]
     df_hourly.index.names = ['timestamp']
-    result = {}
 
     df = bubbletea.aggregate_timeseries(
         data=df_hourly,
@@ -142,8 +141,8 @@ def process_deposits(df_deposits, df_rates):
         start_timestamp=start_timestamp,
         end_timestamp=end_timestamp,
     )
-    result[interval] = df
-    return result
+    df.fillna(0.0, inplace=True)
+    return df
 
 
 with st.spinner("Loading and processing rates data"):
@@ -153,35 +152,34 @@ with st.spinner("Loading deposits data"):
     df_deposits = get_token_deposits()
 
 with st.spinner("Loading and aggregating deposit data"):
-    dfs = process_deposits(df_deposits, df_rates)
-    for p in dfs.keys():
-        df = dfs[p]
+    df = process_deposits(df_deposits, df_rates)
+    st.write(df)
+    p = INTERVALS[interval]
+    bubbletea.plot_line(
+        df,
+        title=p,
+        x={"field": "timestamp", "title": "Time"},
+        yLeft=[
+            {
+                "field": "amount",
+                "title": "Amount",
+            },
+            
+        ],
+        yRight=[
+            {
+                "field": "rate",
+                "title": "Rate",
+            },
+        ],
+        legend="right",
+    )
 
-        bubbletea.plot_line(
-            df,
-            title=p,
-            x={"field": "timestamp", "title": "Time"},
-            yLeft=[
-                {
-                    "field": "amount",
-                    "title": "Amount",
-                },
-                
-            ],
-            yRight=[
-                {
-                    "field": "rate",
-                    "title": "Rate",
-                },
-            ],
-            legend="right",
+    if len(df) > 1:
+        coeff = df['amount'].corr(df['rate'])
+        bubbletea.plot_text(
+            "Coefficient between `amount` and `rate`",
+            primary_text=0.1,
+            formatter="0,0.00a",
+            key=f"normal{p}",
         )
-
-        if len(df) > 1:
-            coeff = df['amount'].corr(df['rate'])
-            bubbletea.plot_text(
-                "Coefficient between `amount` and `rate`",
-                primary_text=0.1,
-                formatter="0,0.00a",
-                key=f"normal{p}",
-            )
