@@ -1,5 +1,6 @@
 import datetime
 import datetime
+from altair.vegalite.v4.schema.core import Legend
 from pandas.core.frame import DataFrame
 import streamlit as st
 import time
@@ -116,12 +117,11 @@ else:
         x={
             "field": "time",
         },
-        yLeft=[
-            {
-                "field": "amount",
-                "title": "Amount",
-            }
-        ],
+        y={
+            "title":"Amount",
+            "data": [{"title": "Amount", "field": "amount"}],
+        },
+        legend="none",
     )
 
     df_amount_over_round = bubbletea.aggregate_groupby(
@@ -142,12 +142,11 @@ else:
         df_amount_over_round,
         title='Stake moved over rounds',
         x={"field": "round", "title": "Round", "type":"ordinal"},# ['quantitative', 'ordinal', 'temporal', 'nominal']
-        yLeft=[
-            {
-                "field": "amount",
-                "title": "Amount",
-            }
-        ],
+        y={
+            "title":"Amount",
+            "data": [{"title": "Amount", "field": "amount"}],
+        },
+        legend="none"
     )
 
 

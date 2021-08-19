@@ -4,6 +4,7 @@ import pandas as dp
 import datetime
 import time
 import os
+import altair as alt
 
 urlvars = bubbletea.parse_url_var([{'key':'startdate','type':'datetime'}, {'key':'enddate','type':'datetime'}])
 
@@ -155,24 +156,20 @@ with st.spinner("Loading and aggregating deposit data"):
     df = process_deposits(df_deposits, df_rates)
     st.write(df)
     p = INTERVALS[interval]
-    bubbletea.plot_line(
+    bubbletea.plot_combo(
         df,
         title=p,
         x={"field": "timestamp", "title": "Time"},
-        yLeft=[
-            {
-                "field": "amount",
-                "title": "Amount",
-            },
-            
-        ],
-        yRight=[
-            {
-                "field": "rate",
-                "title": "Rate",
-            },
-        ],
-        legend="right",
+        yLeft={
+            "marker": bubbletea.line.MARKER,
+            "data":[{"title": "Amount","field":"amount"}]
+        },
+        yRight={
+            "marker": bubbletea.line.MARKER,
+            "data":[{"title": "Rate","field":"rate"}],
+            "scale": alt.Scale(zero=False),
+        },
+        legend="none",
     )
 
     if len(df) > 1:

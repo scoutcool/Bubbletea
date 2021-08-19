@@ -100,7 +100,7 @@ result = data_hourly_aave.merge(pricing_df, left_index=True, right_on="time")
 # # # # # # # # # # # # # # # # #
 # Draw the data on a line chart #
 # # # # # # # # # # # # # # # # #
-bubbletea.plot_line(
+bubbletea.plot_bar(
     title="Hourly AAVE Deposits vs Pricing - Line / Single-axis",
     df=result,
     x={"title": "Time", "field": "time"},
