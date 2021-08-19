@@ -2,6 +2,7 @@ import time
 import bubbletea
 import os
 import datetime
+from bubbletea.charts.helper import hide_action_menu
 import streamlit as st
 
 
@@ -14,6 +15,9 @@ try:
     st.set_page_config(page_title="Demo 2", layout="wide")
 except:
     pass
+
+hide_action_menu()
+
 
 urlvars = bubbletea.parse_url_var(
     [{"key": "startdate", "type": "datetime"}, {"key": "enddate", "type": "datetime"}]
