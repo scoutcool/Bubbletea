@@ -3,7 +3,7 @@
 import setuptools
 from os import path
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 NAME="BubbleTea-py"
 
 DESCRIPTION = "BubbleTea enables developers to quickly build any data applications on the emerging Web3 infrastructure."
