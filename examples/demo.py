@@ -1,5 +1,4 @@
 import streamlit as st
-import altair as alt
 from streamlit.errors import StreamlitAPIException
 import bubbletea
 import os
@@ -21,14 +20,16 @@ except KeyError:
     selected_demo = files[0]
     pass
 
+def on_demo_change():
+    selected_demo = st.session_state.demo_selector
+    bubbletea.update_url({'demo': selected_demo})
+
 
 code_input = """st.header("bubbletea Demos")"""
-with open(f'./examples/{selected_demo}', 'r') as file:
-    code_input = file.read()
 
 if selected_demo in files:
     st.sidebar.title(":hot_pepper: Demos")
-    with st.beta_expander("About Bubbletea"):
+    with st.expander("About Bubbletea"):
         with open('README.md', 'r') as file:
             intro = file.read()
             st.markdown(intro)
@@ -40,9 +41,10 @@ if selected_demo in files:
             index = files.index(selected_demo)
         except ValueError:
             index = 0
-        selected_demo = st.selectbox('🌟 Pick one', files, index=index)
-        bubbletea.update_url({'demo': selected_demo})
+        selected_demo = st.selectbox('🌟 Pick one', files, index=index, on_change=on_demo_change, key='demo_selector')
 
+    with open(f'./examples/{selected_demo}', 'r') as file:
+        code_input = file.read()
 
     with editor:
         st.markdown(f'```{code_input}')
