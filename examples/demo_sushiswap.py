@@ -151,7 +151,7 @@ apy_display = "{:,}".format(apy)
 
 
 
-c0,c1,c2 = st.beta_columns([1,1,1])
+c0,c1,c2 = st.columns([1,1,1])
 with c0:
     st.markdown(
         f"""#### Volume

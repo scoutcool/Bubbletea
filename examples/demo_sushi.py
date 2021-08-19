@@ -49,7 +49,7 @@ bubbletea.plot_line(
         ys=[{"title": "Amount", "field": "amount"}]
     )
 """
-c0,c1,c2 = st.beta_columns([1,3,1])
+c0,c1,c2 = st.columns([1,3,1])
 with c0:
     bubbletea.plot_bar(
         title="Daily Fees Collected",

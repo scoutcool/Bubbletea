@@ -36,7 +36,7 @@ df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 dec
 with st.beta_expander("Some explanations"):
     st.write("Example tests of the explainer components")
 
-col1, col2, col3 = st.beta_columns([3.5,1,1])
+col1, col2, col3 = st.columns([3.5,1,1])
 with col1:
     bubbletea.plot_line(
     title='AAVE Deposits1',
