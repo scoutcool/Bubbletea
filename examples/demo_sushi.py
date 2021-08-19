@@ -48,34 +48,10 @@ deposits_hourly = bubbletea.aggregate_timeseries(
             )
         ],
     )
-
-c0,c1,c2 = st.beta_columns([1,3,1])
-with c0:
-    bubbletea.plot_bar(
-        title="Daily Fees Collected",
-        df= pairDayDatas,
-        x={"title": "Time", "field": "date"},
-        ys=[{"title": "Fees", "field": "fees"}]
-    )
-
-with c1:
-    print(deposits_hourly)
-    bubbletea.plot_bar(
+    
+bubbletea.plot_line(
         title='My first line chart',
         df=deposits_hourly,
         x={"title": "Time", "field": "timestamp"},
-        yLeft=[
-            {"title": "Amount", "field": "amount"}
-        ],
-        yRight=[
-            {"title": "Fees", "field": "fees"}
-        ],
-        legend="none"
+        ys=[{"title": "Amount", "field": "amount"}]
     )
-    
-with c2:
-    #bubbletea.plot_text("asdfasdf")
-    st.header("An owl")
-    st.image("https://static.streamlit.io/examples/owl.jpg")
-
-

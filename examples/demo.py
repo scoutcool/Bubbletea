@@ -34,7 +34,7 @@ if selected_demo in files:
             intro = file.read()
             st.markdown(intro)
 
-    display, editor = st.beta_columns((2, 1))   
+    display, editor = st.columns((2, 1))   
 
     with st.sidebar:
         try:
