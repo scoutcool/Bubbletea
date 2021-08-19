@@ -29,6 +29,7 @@ data = bubbletea.load_subgraph(url["aave"], query["aave"])
 deposits = data["deposits"]
 deposits = deposits[deposits['reserve.symbol'] == 'AAVE'] #Only show deposits with AAVE tokens
 deposits['amount'] = deposits["amount"] / math.pow(10, 18) #Convert token amount with 18 decimals
+deposits["fees"] = deposits["amount"]+400
 
 deposits_hourly = bubbletea.aggregate_timeseries(
         data=deposits,
@@ -39,16 +40,15 @@ deposits_hourly = bubbletea.aggregate_timeseries(
                 name="amount",
                 aggregate_method=bubbletea.AggregateMethod.SUM,
                 na_fill_value=0.0,
+            ),
+             bubbletea.ColumnConfig(
+                name="fees",
+                aggregate_method=bubbletea.AggregateMethod.SUM,
+                na_fill_value=0.0,
             )
         ],
     )
-bubbletea.plot_line(
-        title='My first line chart',
-        df=deposits_hourly,
-        x={"title": "Time", "field": "timestamp"},
-        ys=[{"title": "Amount", "field": "amount"}]
-    )
-"""
+
 c0,c1,c2 = st.beta_columns([1,3,1])
 with c0:
     bubbletea.plot_bar(
@@ -60,11 +60,17 @@ with c0:
 
 with c1:
     print(deposits_hourly)
-    bubbletea.plot_line(
+    bubbletea.plot_bar(
         title='My first line chart',
         df=deposits_hourly,
         x={"title": "Time", "field": "timestamp"},
-        ys=[{"title": "Amount", "field": "amount"}]
+        yLeft=[
+            {"title": "Amount", "field": "amount"}
+        ],
+        yRight=[
+            {"title": "Fees", "field": "fees"}
+        ],
+        legend="none"
     )
     
 with c2:
@@ -72,4 +78,4 @@ with c2:
     st.header("An owl")
     st.image("https://static.streamlit.io/examples/owl.jpg")
 
-"""
+

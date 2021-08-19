@@ -2,7 +2,7 @@ query = {
     "sushiexchange"  : """
         {
             pairDayDatas(
-                where:{date_gte:1627862400, date_lt:1628535113}
+                where:{date_gte:1628337600, date_lt:1628977289}
                 orderBy: date
                 orderDirection: asc
                 bypassPagination: true
@@ -26,7 +26,7 @@ query = {
     "aave"           : """
         {
             deposits(
-                where:{timestamp_gte:1627862400, timestamp_lt:1628535113}
+                where:{timestamp_gte:1628337600, timestamp_lt:1628977289}
                 orderBy: timestamp
                 orderDirection: asc
                 bypassPagination: true
