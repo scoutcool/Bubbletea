@@ -100,13 +100,13 @@ result = data_hourly_aave.merge(pricing_df, left_index=True, right_on="time")
 # # # # # # # # # # # # # # # # #
 # Draw the data on a line chart #
 # # # # # # # # # # # # # # # # #
-bubbletea.legacy_plot_line(
+bubbletea.plot_bar(
     title="Hourly AAVE Deposits vs Pricing - Line / Single-axis",
     df=result,
     x={"title": "Time", "field": "time"},
-    ys={
+    y={
         "title": "Custom title along the y axis",
-        "stack": False,
+        "stack":False,
         "data": [
             {"title": "Price", "field": "close"},
             {"title": "Amount", "field": "amount"},
@@ -131,11 +131,11 @@ bubbletea.plot_combo(
 # # # # # # # # # # # # # # # # # #
 # # Draw the data on a area chart #
 # # # # # # # # # # # # # # # # # #
-bubbletea.legacy_plot_area(
+bubbletea.plot_area(
     title="Hourly AAVE Deposits vs Pricing - Area / Single-axis",
     df=result,
     x={"title": "Time", "field": "time"},
-    ys={
+    y={
         "stack": False,
         "data": [
             {"title": "Price", "field": "close"},
