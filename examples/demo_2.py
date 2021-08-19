@@ -100,32 +100,69 @@ result = data_hourly_aave.merge(pricing_df, left_index=True, right_on="time")
 # # # # # # # # # # # # # # # # #
 # Draw the data on a line chart #
 # # # # # # # # # # # # # # # # #
-bubbletea.plot_line(
-    title="Hourly AAVE Deposits vs Pricing",
+bubbletea.legacy_plot_line(
+    title="Hourly AAVE Deposits vs Pricing - Line / Single-axis",
     df=result,
     x={"title": "Time", "field": "time"},
-    yLeft=[{"title": "Price", "field": "close"}],
-    yRight=[{"title": "Amount", "field": "amount"}],
+    ys={
+        "title": "Custom title along the y axis",
+        "stack": False,
+        "data": [
+            {"title": "Price", "field": "close"},
+            {"title": "Amount", "field": "amount"},
+        ],
+    },
 )
 
-# # # # # # # # # # # # # # # # #
-# Draw the data on a area chart #
-# # # # # # # # # # # # # # # # #
-bubbletea.plot_area(
-    title="Hourly AAVE Deposits vs Pricing",
+bubbletea.plot_combo(
+    title="Hourly AAVE Deposits vs Pricing - Line / Bar Combo",
     df=result,
     x={"title": "Time", "field": "time"},
-    yLeft=[{"title": "Price", "field": "close"}],
-    yRight=[{"title": "Amount", "field": "amount"}],
+    yLeft={
+        "marker": bubbletea.line.MARKER,
+        "data": [{"title": "Price", "field": "close"}],
+    },
+    yRight={
+        "marker": bubbletea.bar.MARKER,
+        "data": [{"title": "Amount", "field": "amount"}],
+    },
 )
 
-# # # # # # # # # # # # # # # # #
-# Draw the data on a bar chart #
-# # # # # # # # # # # # # # # # #
-bubbletea.plot_bar(
-    title="Hourly AAVE Deposits vs Pricing",
+# # # # # # # # # # # # # # # # # #
+# # Draw the data on a area chart #
+# # # # # # # # # # # # # # # # # #
+bubbletea.legacy_plot_area(
+    title="Hourly AAVE Deposits vs Pricing - Area / Single-axis",
     df=result,
     x={"title": "Time", "field": "time"},
-    yLeft=[{"title": "Price", "field": "close"}],
-    yRight=[{"title": "Amount", "field": "amount"}],
+    ys={
+        "stack": False,
+        "data": [
+            {"title": "Price", "field": "close"},
+            {"title": "Amount", "field": "amount"},
+        ],
+    },
+)
+
+bubbletea.plot_combo(
+    title="Hourly AAVE Deposits vs Pricing - Complex combo",
+    df=result,
+    x={"title": "Time", "field": "time"},
+    yLeft={
+        "title": "Unnecessarily stacked area",
+        "stack": True,
+        "marker": bubbletea.area.MARKER,
+        "data": [
+            {"title": "Open", "field": "open"},
+            {"title": "Close", "field": "close"},
+            {"title": "High", "field": "high"},
+            {"title": "Low", "field": "low"},
+        ],
+    },
+    yRight={
+        "marker": bubbletea.line.MARKER,
+        "data": [
+            {"title": "Amount", "field": "amount"},
+        ],
+    },
 )

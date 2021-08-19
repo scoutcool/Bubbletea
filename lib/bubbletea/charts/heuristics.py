@@ -9,9 +9,9 @@ from pandas.api.types import is_numeric_dtype
 DEFAULT_X: alt.X = {"field": "time", "type": "temporal"}
 DEFAULT_Y: alt.Y = {
     "type": "quantitative",
-    "stack": False,
     "scale": alt.Scale(zero=False),
 }
+DEFAULT_Y_EXTRA: alt.Y = {"title": None, "stack": False}
 
 FMT_DATE = "%m/%d"  # yyyy/mm/dd
 FMT_HOURLY_DATETIME = "%m/%d %I%p"  # yyyy/mm/dd HHa/pm

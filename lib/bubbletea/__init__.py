@@ -6,6 +6,7 @@ from .transformers import timeseries as ts
 from .charts import line as line
 from .charts import area as area
 from .charts import bar as bar
+from .charts import combo as combo
 from flash_card import flash_card
 import altair as alt
 
@@ -32,9 +33,13 @@ load_subgraphs = thegraph.load_subgraphs
 
 load_historical_data = cp.load_historical_data
 
+legacy_plot_line = line.legacy_plot_line
+legacy_plot_bar = bar.legacy_plot_bar
+legacy_plot_area = area.legacy_plot_area
 plot_line = line.plot
 plot_bar = bar.plot
 plot_area = area.plot
+plot_combo = combo.plot
 plot_text = flash_card
 
 parse_url_var = urlparser.parse_url_var
