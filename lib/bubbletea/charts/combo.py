@@ -1,4 +1,3 @@
-from pandas import DataFrame
-from .base import _plot_combo
+from .base import plot_combo
 
-plot = _plot_combo
+plot = plot_combo

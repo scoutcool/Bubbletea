@@ -106,10 +106,9 @@ bubbletea.plot_bar(
     x={"title": "Time", "field": "time"},
     y={
         "title": "Custom title along the y axis",
-        "stack":False,
         "data": [
-            {"title": "Price", "field": "close"},
             {"title": "Amount", "field": "amount"},
+            {"title": "Price", "field": "close"},
         ],
     },
 )

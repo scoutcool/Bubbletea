@@ -1,13 +1,30 @@
+from typing import Any
+from attr import asdict
 import streamlit as st
 import altair as alt
 from altair.utils.schemapi import Undefined
 from pandas import DataFrame, set_option, melt
 
-from .heuristics import guess_x_config, guess_y_config, DEFAULT_X, DEFAULT_Y_EXTRA
+from .heuristics import guess_x_config, guess_y_config, DEFAULT_Y_EXTRA
 from .colors import PALETTE
 
 # Suppress SettingWithCopyWarning from pandas
 set_option("mode.chained_assignment", None)
+
+
+def _validate_y_config(y: dict, comboLabel: str = "y"):
+    err = None
+
+    if "data" not in y or len(y["data"]) == 0:
+        err = comboLabel + ": Must define at least one data field"
+
+    if comboLabel != "y" and "marker" not in y:
+        err = comboLabel + ": Must define marker"
+
+    if err:
+        st.warning("Exception occured when validating " + comboLabel)
+        st.warning(y)
+        raise Exception(err)
 
 
 # WARNING: Mutates frames
@@ -26,8 +43,8 @@ def _calculate_x_config(frames: DataFrame, x: alt.X):
 
 
 # WARNING: Mutates frames
-def _calculate_ys_config(frames: DataFrame, ys):
-    yExtra = {**ys}
+def _calculate_ys_config(frames: DataFrame, yConfig: dict):
+    yExtra = {**yConfig}
     data = yExtra.pop("data")
     ys_config = list(map(lambda y: guess_y_config(y, frames), data))
 
@@ -108,43 +125,42 @@ def _get_annotations(
         .transform_filter(click_selection)
     )
 
-    if base == None:
-        return hover_rule, multi_rules
+    return hover_rule, multi_rules
 
-    hover_point = base.mark_point().encode(
-        y=alt.Y("value:Q", stack=stack),
-        opacity=alt.condition(hover_selection, alt.value(1), alt.value(0)),
-    )
+    # if base == None:
+    #     return hover_rule, multi_rules
 
-    sticky_points = base.mark_point().encode(
-        y=alt.Y("value:Q", stack=stack),
-        opacity=alt.condition(click_selection, alt.value(1), alt.value(0)),
-    )
+    # hover_point = base.mark_point().encode(
+    #     y=alt.Y("value:Q", stack=stack),
+    #     opacity=alt.condition(hover_selection, alt.value(1), alt.value(0)),
+    # )
 
-    return hover_rule, multi_rules, hover_point, sticky_points
+    # sticky_points = base.mark_point().encode(
+    #     y=alt.Y("value:Q", stack=stack),
+    #     opacity=alt.condition(click_selection, alt.value(1), alt.value(0)),
+    # )
+
+    # return hover_rule, multi_rules, hover_point, sticky_points
 
 
-def _get_all_config(frames, x, ys):
-
+def _get_all_config(frames, x, yConfig):
     x_config, x_tooltip_config, x_axis_config = _calculate_x_config(frames, x)
-    ys_config_all, yExtra = _calculate_ys_config(frames, ys)
+    ys_config_all, yExtra = _calculate_ys_config(frames, yConfig)
     return x_config, x_tooltip_config, x_axis_config, ys_config_all, yExtra
 
 
 def _plot_single(
     marker: str,
     df: DataFrame,
-    x: alt.X = DEFAULT_X,
-    y: "list[alt.Y]" = [],
+    x: alt.X,
+    y: dict,
     palette: list[str] = PALETTE,
-    legend="right",  # could be 'left', 'right', 'none',
-    orient="left",  # or 'right'
+    legend: alt.LegendOrient = "right",
+    orient: alt.AxisOrient = "left",
 ):
     frames = df.reset_index()
 
-    x_config, x_tooltip_config, x_axis_config, ys_config_all, yExtra = _get_all_config(
-        frames, x, y
-    )
+    x_config, _, x_axis_config, ys_config_all, yExtra = _get_all_config(frames, x, y)
 
     legend_selection = alt.selection_multi(fields=["variable"], bind="legend")
 
@@ -187,9 +203,6 @@ def _plot_single(
                 scale=alt.Scale(range=palette[1:]),
             )
         ),
-        # column=(
-        #     alt.Column("variable:N", spacing=5, header=alt.Header(labelOrient="bottom"))
-        # ),
         opacity=alt.condition(legend_selection, alt.value(0.75), alt.value(0.3)),
     )
 
@@ -203,8 +216,8 @@ def _plot_single(
 def _plot_annotations(
     df: DataFrame,
     base: alt.Chart,
-    x: alt.X = DEFAULT_X,
-    y: "list[alt.Y]" = [],
+    x: alt.X,
+    y: dict,
     palette: list[str] = PALETTE,
 ):
     frames = df.reset_index()
@@ -224,39 +237,54 @@ def _plot_annotations(
     )
 
 
-def _plot_simple(
+def plot_simple(
     marker: str,
+):
+    def _plot_simple(
+        # data config
+        df: DataFrame,
+        x: alt.X,
+        y: dict,
+        # chart config
+        palette: list[str] = PALETTE,
+        title: str = None,
+        height: int = 400,
+        legend: alt.LegendOrient = "right",
+    ):
+
+        _validate_y_config(y)
+
+        if title != None:
+            st.subheader(title)
+
+        if marker == "mark_bar":
+            y["stack"] = True
+
+        chart, base = _plot_single(marker, df, y=y, x=x, palette=palette, legend=legend)
+        annotations = _plot_annotations(df=df, base=base, y=y, x=x, palette=palette)
+
+        st.altair_chart(
+            alt.layer(chart, *annotations).properties(height=height),
+            use_container_width=True,
+        )
+
+    return _plot_simple
+
+
+def plot_combo(
     df: DataFrame,
-    x: alt.X = DEFAULT_X,
-    y=None,
-    palette=PALETTE,
+    x: alt.X,
+    yLeft: dict,
+    yRight: dict,
+    palette: list[str] = PALETTE,
     title: str = None,
     height: int = 400,
-    legend="right",  # could be 'left', 'right', 'none',
+    legend: alt.LegendOrient = "right",
+    defaultMarker: str = "mark_line",
 ):
-    if title != None:
-        st.subheader(title)
 
-    chart, base = _plot_single(marker, df, y=y, x=x, palette=palette, legend=legend)
-    annotations = _plot_annotations(df=df, base=base, y=y, x=x, palette=palette)
-
-    st.altair_chart(
-        alt.layer(chart, *annotations).properties(height=height),
-        use_container_width=True,
-    )
-
-
-def _plot_combo(
-    df: DataFrame,
-    x: alt.X = DEFAULT_X,
-    yLeft={},
-    yRight={},
-    palette=PALETTE,
-    title: str = None,
-    height: int = 400,
-    legend="right",  # could be 'left', 'right', 'none',
-    defaultMarker="mark_line",
-):
+    _validate_y_config(yLeft, "yLeft")
+    _validate_y_config(yRight, "yRight")
 
     if title != None:
         st.subheader(title)
