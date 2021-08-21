@@ -36,7 +36,7 @@ data2 = pd.DataFrame(
 st.subheader("Nominal numbers as string")
 st.write(data1)
 
-bubbletea.plot_line(
+bubbletea.beta_plot_line(
     data1,
     x={"field": "round", "title": "Round"},
     ys=[
@@ -50,7 +50,7 @@ bubbletea.plot_line(
 st.subheader("Nominal numbers as number")
 st.write(data2)
 
-bubbletea.plot_line(
+bubbletea.beta_plot_line(
     data2,
     x={"field": "round", "title": "Round"},
     ys=[
@@ -96,7 +96,7 @@ data4 = pd.DataFrame(
 st.subheader("Timestamps as number")
 st.write(data3)
 
-bubbletea.plot_line(
+bubbletea.beta_plot_line(
     data3,
     x={
         "field": "timestamp",
@@ -111,7 +111,7 @@ bubbletea.plot_line(
 
 st.subheader("Timestamps as string")
 st.write(data3)
-bubbletea.plot_line(
+bubbletea.beta_plot_line(
     data4,
     x={
         "field": "timestamp",

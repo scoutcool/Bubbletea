@@ -63,12 +63,12 @@ query_aave = """
     end_timestamp,
 )
 
-data_aave = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
+data_aave = bubbletea.beta_load_subgraph(url_aave_subgraph, query_aave)
 data_aave = data_aave["deposits"]
 data_aave = data_aave[
     data_aave["reserve.symbol"] == "AAVE"
 ]  # Only show deposits with AAVE tokens
-data_hourly_aave = bubbletea.aggregate_timeseries(  # aggregate deposits data by hours
+data_hourly_aave = bubbletea.beta_aggregate_timeseries(  # aggregate deposits data by hours
     data_aave,
     time_column="timestamp",
     interval=bubbletea.TimeseriesInterval.HOURLY,
@@ -88,7 +88,7 @@ data_hourly_aave["amount"] = (
 # Load pricing data from cryptocompare.com  #
 # # # # # # # # # # # # # # # # # # # # # # #
 CP_API_TOKEN = os.environ.get("cp_api_token")
-pricing_df = bubbletea.load_historical_data(
+pricing_df = bubbletea.beta_load_historical_data(
     "AAVE", "USD", start_timestamp, end_timestamp, CP_API_TOKEN, 2000
 )
 
@@ -100,7 +100,7 @@ result = data_hourly_aave.merge(pricing_df, left_index=True, right_on="time")
 # # # # # # # # # # # # # # # # #
 # Draw the data on a line chart #
 # # # # # # # # # # # # # # # # #
-bubbletea.plot_bar(
+bubbletea.beta_plot_line(
     title="Hourly AAVE Deposits vs Pricing - Line / Single-axis",
     df=result,
     x={"title": "Time", "field": "time"},
@@ -113,7 +113,7 @@ bubbletea.plot_bar(
     },
 )
 
-bubbletea.plot_combo(
+bubbletea.beta_plot_combo(
     title="Hourly AAVE Deposits vs Pricing - Line / Bar Combo",
     df=result,
     x={"title": "Time", "field": "time"},
@@ -130,7 +130,7 @@ bubbletea.plot_combo(
 # # # # # # # # # # # # # # # # # #
 # # Draw the data on a area chart #
 # # # # # # # # # # # # # # # # # #
-bubbletea.plot_area(
+bubbletea.beta_plot_area(
     title="Hourly AAVE Deposits vs Pricing - Area / Single-axis",
     df=result,
     x={"title": "Time", "field": "time"},
@@ -143,7 +143,7 @@ bubbletea.plot_area(
     },
 )
 
-bubbletea.plot_combo(
+bubbletea.beta_plot_combo(
     title="Hourly AAVE Deposits vs Pricing - Complex combo",
     df=result,
     x={"title": "Time", "field": "time"},

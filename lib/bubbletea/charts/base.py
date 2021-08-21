@@ -271,7 +271,7 @@ def plot_simple(
     return _plot_simple
 
 
-def plot_combo(
+def beta_plot_combo(
     df: DataFrame,
     x: alt.X,
     yLeft: dict,

@@ -19,7 +19,7 @@ def _load_historical_data(url:str):
     return text["Data"]
 
 
-def load_historical_data(from_symbol:str, to_symbol:str, start_timestamp:int, end_timestamp:int, apikey:str, apilimit:int=2000, interval='H', exchange='CCCAGG'):
+def beta_load_historical_data(from_symbol:str, to_symbol:str, start_timestamp:int, end_timestamp:int, apikey:str, apilimit:int=2000, interval='H', exchange='CCCAGG'):
     interval = interval.lower()
     if apikey == None:
         raise ValueError('CryptoCompare API KEY is not provided. If you don\'t have have, get it here https://min-api.cryptocompare.com/')

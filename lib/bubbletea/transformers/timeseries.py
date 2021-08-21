@@ -65,7 +65,7 @@ def _last_day_of_month(any_day):
     return next_month - datetime.timedelta(days=next_month.day)
 
 
-def aggregate_timeseries(
+def beta_aggregate_timeseries(
     data: Union[Dict, "list[Dict]", DataFrame],
     time_column: str,
     interval: TimeseriesInterval,
@@ -164,7 +164,7 @@ def aggregate_timeseries(
     return result_df
 
 
-def aggregate_groupby(
+def beta_aggregate_groupby(
     data: Union[Dict, "list[Dict]", DataFrame],
     by_column: str,
     columns: "list[ColumnConfig]",

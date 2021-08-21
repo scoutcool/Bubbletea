@@ -81,7 +81,7 @@ query = """
 )
 
 def get_rates_df(symbol, start_timestamp, end_timestamp):
-    df = bubbletea.load_historical_data(
+    df = bubbletea.beta_load_historical_data(
         symbol, "USD", start_timestamp, end_timestamp, CP_API_TOKEN, 2000, 'H'
     )
     df['rate'] = df['close']
@@ -94,14 +94,14 @@ def on_deposits_progress(obj):
 
 
 def get_token_deposits():
-    data = bubbletea.load_subgraph(subgraph_url, query, on_deposits_progress)
+    data = bubbletea.beta_load_subgraph(subgraph_url, query, on_deposits_progress)
     df = data["deposits"]
     df = df[df['reserve.symbol'] == token_symbol] #Filter rows where reserve.symbol == selected symbol
     df['amount'] = df['amount'] / (10 ** df['reserve.decimals'])
     return df
 
 def process_deposits(df_deposits, df_rates):
-    df_hourly = bubbletea.aggregate_timeseries(
+    df_hourly = bubbletea.beta_aggregate_timeseries(
         data=df_deposits,
         time_column="timestamp",
         interval=bubbletea.TimeseriesInterval.HOURLY,
@@ -118,7 +118,7 @@ def process_deposits(df_deposits, df_rates):
     df_hourly["volume"] = df_hourly["amount"] * df_hourly["rate"]
     df_hourly.index.names = ['timestamp']
 
-    df = bubbletea.aggregate_timeseries(
+    df = bubbletea.beta_aggregate_timeseries(
         data=df_hourly,
         time_column="timestamp",
         interval=interval,
@@ -156,7 +156,7 @@ with st.spinner("Loading and aggregating deposit data"):
     df = process_deposits(df_deposits, df_rates)
     st.write(df)
     p = INTERVALS[interval]
-    bubbletea.plot_combo(
+    bubbletea.beta_plot_combo(
         df,
         title=p,
         x={"field": "timestamp", "title": "Time"},
@@ -174,7 +174,7 @@ with st.spinner("Loading and aggregating deposit data"):
 
     if len(df) > 1:
         coeff = df['amount'].corr(df['rate'])
-        bubbletea.plot_text(
+        bubbletea.beta_plot_text(
             "Coefficient between `amount` and `rate`",
             primary_text=0.1,
             formatter="0,0.00a",
