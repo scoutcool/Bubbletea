@@ -1,1 +1,1 @@
-web: sh setup.sh && python -m pip install -e lib && streamlit run examples/demo.py
+web: sh setup.sh && streamlit run examples/demo.py
