@@ -23,7 +23,7 @@ query = """
 }
 """
 
-df = bubbletea.load_subgraph(url, query)
+df = bubbletea.beta_load_subgraph(url, query)
 df = df["deposits"]
 df = df[df['reserve.symbol'] == 'AAVE'] #Only show deposits with AAVE tokens
 df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 decimals

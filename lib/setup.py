@@ -3,7 +3,7 @@
 import setuptools
 from os import path
 
-VERSION = "0.0.2"
+VERSION = "0.0.4"
 NAME="BubbleTea-py"
 
 DESCRIPTION = "BubbleTea enables developers to quickly build any data applications on the emerging Web3 infrastructure."
@@ -41,7 +41,7 @@ setuptools.setup(
     # package_dir={'bubbletea-py': './'},
     packages=setuptools.find_packages(exclude=["tests", "tests.*"]),
     install_requires=[
-        'streamlit==0.86.0','graphql-core==3.1.5', 'st-flashcard==0.0.4', 'python-dotenv==0.18.0'
+        'streamlit==0.87.0','graphql-core==3.1.5', 'st-flashcard==0.0.4', 'python-dotenv==0.18.0'
     ],
     entry_points={
         'console_scripts': ['bubbletea = bubbletea.cli:run']
