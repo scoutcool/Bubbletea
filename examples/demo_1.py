@@ -33,8 +33,9 @@ df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 dec
 # Draw the data on a line chart #
 # # # # # # # # # # # # # # # # #
 bubbletea.plot_line(
-    title='AAVE Deposits',
+    title='My first line chart',
     df=df,
     x={"title": "Time", "field": "timestamp"},
-    y={"title": "Amount", "data":[{"title": "Amount", "field": "amount"}]},
+    y={"title": "Total Deposit", "data":[{"title": "Amount", "field": "amount"}]},
+    legend="none"
 )

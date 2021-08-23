@@ -48,10 +48,15 @@ deposits_hourly = bubbletea.aggregate_timeseries(
             )
         ],
     )
-    
+
 bubbletea.plot_line(
         title='My first line chart',
         df=deposits_hourly,
         x={"title": "Time", "field": "timestamp"},
-        ys=[{"title": "Amount", "field": "amount"}]
+        y={
+            "title": "Amount", 
+            "data":[
+                {"title": "Amount", "field": "amount"}
+            ]
+        },
     )
