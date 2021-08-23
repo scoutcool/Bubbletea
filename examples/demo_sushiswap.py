@@ -83,7 +83,7 @@ def get_tokens_24h():
         }
     }""" % (t_24hago, t_now)
     # print(query)
-    data = bubbletea.load_subgraph(subgraph_url_exchange, query)
+    data = bubbletea.beta_load_subgraph(subgraph_url_exchange, query)
     return data
 
 
@@ -103,7 +103,7 @@ st.write(df_tokens)
 
 @st.cache(show_spinner=False)
 def get_factory_at_block(block):
-    data = bubbletea.load_subgraph(subgraph_url_exchange,
+    data = bubbletea.beta_load_subgraph(subgraph_url_exchange,
     """
     {
         factories(block: {number:%s}) {
@@ -124,7 +124,7 @@ st.write(facotory_volume_24h_ago)
 
 @st.cache(show_spinner=False)
 def get_bar():
-    data = bubbletea.load_subgraph(subgraph_url_bar, """
+    data = bubbletea.beta_load_subgraph(subgraph_url_bar, """
     {
         bars{
             ratio

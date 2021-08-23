@@ -32,9 +32,9 @@ Return:
 ```
 
 """
-def load_subgraph(url:str, query:str, progressCallback=None, useBigDecimal=False):
+def beta_load_subgraph(url:str, query:str, progressCallback=None, useBigDecimal=False):
     sl = SubgraphLoader(url, query)
-    return sl.load_subgraph(progressCallback, useBigDecimal)
+    return sl.beta_load_subgraph(progressCallback, useBigDecimal)
 
 """
 Fetch data from multiple subgraphs .
@@ -53,12 +53,12 @@ Return:
     }
 }
 """
-def load_subgraphs(defs:list[SubgraphDef]):
+def beta_load_subgraphs(defs:list[SubgraphDef]):
     results = {}
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(defs)) as executor:
-        future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.progressCallback, d.useBigDecimal): d for d in defs}
-        # future_to_url = {executor.submit(load_subgraph, d.url, d.query, d.progressCallback, d.useBigDecimal) for d in defs}
+        future_to_url = {executor.submit(beta_load_subgraph, d.url, d.query, d.progressCallback, d.useBigDecimal): d for d in defs}
+        # future_to_url = {executor.submit(beta_load_subgraph, d.url, d.query, d.progressCallback, d.useBigDecimal) for d in defs}
         # for thread in executor._threads:
         #     add_report_ctx(thread)
 

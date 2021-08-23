@@ -118,8 +118,8 @@ class SubgraphLoader:
         return has_more_page
     
 
-    def load_subgraph(self, progressCallback=None, useBigDecimal=False):
-        # print('?????load_subgraph')
+    def beta_load_subgraph(self, progressCallback=None, useBigDecimal=False):
+        # print('?????beta_load_subgraph')
         has_more_page = self._load_page(progressCallback, True)
         # print(f'?????has_more_page {has_more_page}')
         while has_more_page:

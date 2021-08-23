@@ -1,3 +1,3 @@
-from .base import plot_combo
+from .base import beta_plot_combo
 
-plot = plot_combo
+plot = beta_plot_combo

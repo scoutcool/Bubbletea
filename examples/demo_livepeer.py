@@ -1,6 +1,7 @@
 import datetime
 import datetime
 from altair.vegalite.v4.schema.core import Legend
+import pandas
 from pandas.core.frame import DataFrame
 import streamlit as st
 import time
@@ -75,7 +76,7 @@ query = """
 )
 
 with st.spinner("Loading data from the graph"):
-    df = bubbletea.load_subgraph(subgraph_url, query, useBigDecimal=True)
+    df = bubbletea.beta_load_subgraph(subgraph_url, query, useBigDecimal=True)
 
 df_bond = df["bondEvents"]
 df_bond.rename(columns={"bondedAmount": "amount"}, inplace=True)
@@ -96,7 +97,7 @@ if len(df_amount) == 0:
     st.write('No data vailable')
 else:
     df_amount = df_amount.reset_index()
-    df_amount_over_time = bubbletea.aggregate_timeseries(
+    df_amount_over_time = bubbletea.beta_aggregate_timeseries(
         df_amount,
         time_column="timestamp",
         interval=bubbletea.TimeseriesInterval.DAILY,
@@ -112,7 +113,7 @@ else:
     df_amount_over_time.index.names = ["time"]
     st.subheader("Stake moved over time")
     st.write(df_amount_over_time)
-    bubbletea.plot_line(
+    bubbletea.beta_plot_line(
         df_amount_over_time,
         x={
             "field": "time",
@@ -124,7 +125,7 @@ else:
         legend="none",
     )
 
-    df_amount_over_round = bubbletea.aggregate_groupby(
+    df_amount_over_round = bubbletea.beta_aggregate_groupby(
         df_amount,
         by_column="round.id",
         columns=[
@@ -138,7 +139,7 @@ else:
     )
     df_amount_over_round.index.names = ["round"]
     st.write(df_amount_over_round)
-    bubbletea.plot_line(
+    bubbletea.beta_plot_line(
         df_amount_over_round,
         title='Stake moved over rounds',
         x={"field": "round", "title": "Round", "type":"ordinal"},# ['quantitative', 'ordinal', 'temporal', 'nominal']
@@ -154,18 +155,32 @@ else:
 
 
     def process_transcoders():
-        df0 = df_bond[["timestamp", "amount", "round.id", "oldDelegate.id"]]
-        df0.rename(columns={"oldDelegate.id": "transcoder", "amount": "loss"}, inplace=True)
+        dfs = []
+        if len(df_bond) > 0:
+            df0 = df_bond[["timestamp", "amount", "round.id", "oldDelegate.id"]]
+            df0.rename(columns={"oldDelegate.id": "transcoder", "amount": "loss"}, inplace=True)
 
-        df1 = df_bond[["timestamp", "amount", "round.id", "newDelegate.id"]]
-        df1.rename(columns={"newDelegate.id": "transcoder", "amount": "gain"}, inplace=True)
+            df1 = df_bond[["timestamp", "amount", "round.id", "newDelegate.id"]]
+            df1.rename(columns={"newDelegate.id": "transcoder", "amount": "gain"}, inplace=True)
+            dfs.append(df0)
+            dfs.append(df1)
 
-        df2 = df_unbond[["timestamp", "amount", "round.id", "delegate.id"]]
-        df2.rename(columns={"delegate.id": "transcoder", "amount": "loss"}, inplace=True)
+        if len(df_unbond) > 0:
+            df2 = df_unbond[["timestamp", "amount", "round.id", "delegate.id"]]
+            df2.rename(columns={"delegate.id": "transcoder", "amount": "loss"}, inplace=True)
+            dfs.append(df2)
 
-        df3 = df_rebond[["timestamp", "amount", "round.id", "delegate.id"]]
-        df3.rename(columns={"delegate.id": "transcoder", "amount": "gain"}, inplace=True)
-        df = df0.append(df1).append(df1).append(df2).append(df3)
+        if len(df_rebond) > 0:
+            df3 = df_rebond[["timestamp", "amount", "round.id", "delegate.id"]]
+            df3.rename(columns={"delegate.id": "transcoder", "amount": "gain"}, inplace=True)
+            dfs.append(df3)
+            
+        df = pandas.DataFrame()
+        for d in dfs:
+            if len(df) == 0:
+                df = d
+            else:
+                df = df.append(d)
 
         df.fillna(0.0, inplace=True)
         df.reset_index(inplace=True)
@@ -173,7 +188,7 @@ else:
 
 
     df_transcoders = process_transcoders()
-    df_loss_gains = bubbletea.aggregate_groupby(
+    df_loss_gains = bubbletea.beta_aggregate_groupby(
         df_transcoders,
         "transcoder",
         columns=[

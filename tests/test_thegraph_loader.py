@@ -32,7 +32,7 @@ query_aave = """{
 }
 """
 
-# data = bubbletea.load_subgraph(url_aave_subgraph, query_aave)
+# data = bubbletea.beta_load_subgraph(url_aave_subgraph, query_aave)
 # print(data)
 # df = data['factories']
 # print(df.dtypes)
@@ -55,7 +55,7 @@ query_compoundv2 = """
 	}
 }
 """
-# data = gl.load_subgraph(url_compoundv2_subgraph, query_compoundv2)
+# data = gl.beta_load_subgraph(url_compoundv2_subgraph, query_compoundv2)
 
 
 # data = data['data']
@@ -70,7 +70,7 @@ query_compoundv2 = """
 
 # st.markdown('---')
 # st.subheader('Multiple Subgraphs')
-data = bubbletea.load_subgraphs([
+data = bubbletea.beta_load_subgraphs([
     bubbletea.SubgraphDef(url=url_aave_subgraph, query=query_aave), 
     bubbletea.SubgraphDef(url=url_compoundv2_subgraph, query=query_compoundv2)
     ])

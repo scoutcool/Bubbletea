@@ -25,19 +25,19 @@ NaInterpolationMethod = ts.NaInterpolationMethod
 ColumnType = ts.ColumnType
 ColumnConfig = ts.ColumnConfig
 SubgraphDef = thegraph.SubgraphDef
-aggregate_groupby = ts.aggregate_groupby
-aggregate_timeseries = ts.aggregate_timeseries
+beta_aggregate_groupby = ts.beta_aggregate_groupby
+beta_aggregate_timeseries = ts.beta_aggregate_timeseries
 
-load_subgraph = thegraph.load_subgraph
-load_subgraphs = thegraph.load_subgraphs
+beta_load_subgraph = thegraph.beta_load_subgraph
+beta_load_subgraphs = thegraph.beta_load_subgraphs
 
-load_historical_data = cp.load_historical_data
+beta_load_historical_data = cp.beta_load_historical_data
 
-plot_line = line.plot
-plot_bar = bar.plot
-plot_area = area.plot
-plot_combo = combo.plot
-plot_text = flash_card
+beta_plot_line = line.plot
+beta_plot_bar = bar.plot
+beta_plot_area = area.plot
+beta_plot_combo = combo.plot
+beta_plot_text = flash_card
 
 parse_url_var = urlparser.parse_url_var
 update_url = urlparser.update_url
