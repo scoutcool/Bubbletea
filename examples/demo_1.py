@@ -23,7 +23,7 @@ query = """
 }
 """
 
-df = bubbletea.beta_load_subgraph(url, query)
+df = bubbletea.load_subgraph(url, query)
 df = df["deposits"]
 df = df[df['reserve.symbol'] == 'AAVE'] #Only show deposits with AAVE tokens
 df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 decimals
@@ -32,13 +32,9 @@ df['amount'] = df["amount"] / math.pow(10, 18) #Convert token amount with 18 dec
 # # # # # # # # # # # # # # # # #
 # Draw the data on a line chart #
 # # # # # # # # # # # # # # # # #
-<<<<<<< HEAD
-bubbletea.plot_line(
-    title='My first line chart',
-=======
+
 bubbletea.beta_plot_line(
-    title='AAVE Deposits',
->>>>>>> e784e5846c0161d636734d331993c1b66536cf2f
+    title='AAVE Deposit',
     df=df,
     x={"title": "Time", "field": "timestamp"},
     y={"title": "Total Deposit", "data":[{"title": "Amount", "field": "amount"}]},

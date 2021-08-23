@@ -48,13 +48,8 @@ deposits_hourly = bubbletea.beta_aggregate_timeseries(
             )
         ],
     )
-<<<<<<< HEAD
 
-bubbletea.plot_line(
-=======
-    
 bubbletea.beta_plot_line(
->>>>>>> e784e5846c0161d636734d331993c1b66536cf2f
         title='My first line chart',
         df=deposits_hourly,
         x={"title": "Time", "field": "timestamp"},
