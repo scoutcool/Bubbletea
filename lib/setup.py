@@ -41,7 +41,7 @@ setuptools.setup(
     # package_dir={'bubbletea-py': './'},
     packages=setuptools.find_packages(exclude=["tests", "tests.*"]),
     install_requires=[
-        'streamlit==0.87.0','graphql-core==3.1.5', 'st-flashcard==0.0.4', 'python-dotenv==0.18.0'
+        'streamlit==0.87.0','graphql-core==3.1.5', 'st-flashcard==0.0.5', 'python-dotenv==0.18.0'
     ],
     entry_points={
         'console_scripts': ['bubbletea = bubbletea.cli:run']
