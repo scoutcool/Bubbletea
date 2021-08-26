@@ -23,3 +23,5 @@ pip install BubbleTea-py
 
 ### Get in touch
 https://twitter.com/scout_cool
+kuan@scout.cool
+cj@scout.cool
