@@ -10,7 +10,9 @@ This project is made possible by a grant (wave 2) from The Graph foundation.
 
 `beta_load_subgraph` `beta_load_subgraphs`
 
-- A set of handy functions for common data transformations (built on Pandas) `beta_aggregate_timeseries` `beta_aggregate_groupby`
+- A set of handy functions for common data transformations (built on Pandas) 
+
+`beta_aggregate_timeseries` `beta_aggregate_groupby`
 
 - A set of out-of-box charting components to make visualizations effortless (built on Altair) `beta_plot_line` `beta_plot_bar` `beta_plot_area` `beta_plot_combo`
 
