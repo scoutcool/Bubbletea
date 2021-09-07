@@ -7,8 +7,8 @@ This project is made possible by a grant (wave 2) from The Graph foundation.
 
 ### What problems are we solving
 - An improved way to query data from The Graph network
-beta_load_subgraph
-beta_load_subgraphs
+`beta_load_subgraph`
+`beta_load_subgraphs`
 
 - A set of handy functions for common data transformations (built on Pandas)
 beta_aggregate_timeseries
