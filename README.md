@@ -29,6 +29,7 @@ This project is made possible by a grant (wave 2) from The Graph foundation.
 `beta_plot_combo`
 
 - A simple templating system to build dashboards (built on Streamlit)
+
 `The entire streamlit component library`
 
 ### Install
