@@ -144,6 +144,11 @@ def guess_x_config(x: alt.X, df: DataFrame):
     axis_config = guessed_x_config["axis"]
     del guessed_x_config["axis"]
 
+    if "axis" in x:
+        overwrite_axis_config = x["axis"]
+        del x["axis"]
+        axis_config = {**axis_config, **overwrite_axis_config}
+
     return {
         "config": {
             # base: default
@@ -163,6 +168,11 @@ def guess_y_config(y: alt.Y, df: DataFrame):
 
     axis_config = guessed_y_config["axis"]
     del guessed_y_config["axis"]
+
+    if "axis" in y:
+        overwrite_axis_config = y["axis"]
+        del y["axis"]
+        axis_config = {**axis_config, **overwrite_axis_config}
 
     return {
         "config": {
