@@ -50,19 +50,18 @@ def guess_time_axis(df: DataFrame):
     type = "temporal"
     timeUnit = "yearmonthdatehoursminutes"
     tickCount = time_delta
-    labelAngle = 0
+    labelAngle = -45
 
     if has_nonzero_minutes:
         fmt = FMT_FULL_DATETIME
-        tickCount = time_delta * (4 if time_delta < 8 else 1)
-        labelAngle = -45
+        tickCount = min(time_delta * (4 if time_delta < 8 else 1), 9)
     elif has_nonzero_hours:
         fmt = FMT_HOURLY_DATETIME
         timeUnit = "yearmonthdatehours"
-        tickCount = time_delta * (4 if time_delta < 8 else 1)
-        labelAngle = -45
+        tickCount = min(time_delta * (4 if time_delta < 8 else 1), 9)
     else:
         fmt = FMT_DATE
+        tickCount = min(time_delta, 9)
         timeUnit = "yearmonthdate"
 
     if has_different_year_from_current:
