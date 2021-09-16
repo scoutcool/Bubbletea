@@ -1,6 +1,5 @@
 from functools import reduce
 from typing import Optional
-from bubbletea.charts.colors import PALETTE
 import streamlit as st
 from pandas import DataFrame
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
@@ -28,9 +27,6 @@ def plot(df: DataFrame, columnDefs: list[dict], pageSize: Optional[int]):
         Set to None for let Ag-grid to determine page size.
 
     """
-
-    st.subheader("Using st.write")
-    st.write(df)
 
     gb = GridOptionsBuilder.from_dataframe(
         df[
@@ -70,7 +66,6 @@ def plot(df: DataFrame, columnDefs: list[dict], pageSize: Optional[int]):
     gb.configure_grid_options(domLayout="normal")
     gridOptions = gb.build()
 
-    st.subheader("Using bubbletea.beta_plot_table")
     AgGrid(
         df,
         width="100%",
