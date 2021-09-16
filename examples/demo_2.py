@@ -65,20 +65,46 @@ query_aave = """
 
 data_aave = bubbletea.beta_load_subgraph(url_aave_subgraph, query_aave)
 data_aave = data_aave["deposits"]
+
+
 data_aave = data_aave[
     data_aave["reserve.symbol"] == "AAVE"
 ]  # Only show deposits with AAVE tokens
-data_hourly_aave = bubbletea.beta_aggregate_timeseries(  # aggregate deposits data by hours
+
+data_aave["tx_id"] = data_aave["id"].apply(lambda id: id[:-2])
+data_aave["tx_url"] = "https://etherscan.io/tx/" + data_aave["tx_id"]
+
+bubbletea.beta_plot_table(
     data_aave,
-    time_column="timestamp",
-    interval=bubbletea.TimeseriesInterval.HOURLY,
-    columns=[
-        bubbletea.ColumnConfig(
-            name="amount",
-            aggregate_method=bubbletea.AggregateMethod.SUM,
-            na_fill_value=0.0,
-        )
+    [
+        {"field": "timestamp", "headerName": "Deposit Time"},
+        {
+            "field": "amount",
+            "headerName": "Amount",
+            "valueFormatter": 'Math.floor(value).toString().replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, "$1,")',
+        },
+        {
+            "field": "tx_id",
+            "headerName": "Transaction",
+            "href": "tx_url",
+        },
     ],
+    pageSize=20,
+)
+
+data_hourly_aave = (
+    bubbletea.beta_aggregate_timeseries(  # aggregate deposits data by hours
+        data_aave,
+        time_column="timestamp",
+        interval=bubbletea.TimeseriesInterval.HOURLY,
+        columns=[
+            bubbletea.ColumnConfig(
+                name="amount",
+                aggregate_method=bubbletea.AggregateMethod.SUM,
+                na_fill_value=0.0,
+            )
+        ],
+    )
 )
 data_hourly_aave["amount"] = (
     data_hourly_aave["amount"] / 1000000000000000000

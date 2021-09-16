@@ -7,6 +7,7 @@ from .charts import line as line
 from .charts import area as area
 from .charts import bar as bar
 from .charts import combo as combo
+from .charts import table as table
 from flash_card import flash_card
 import altair as alt
 
@@ -37,6 +38,7 @@ beta_plot_line = line.plot
 beta_plot_bar = bar.plot
 beta_plot_area = area.plot
 beta_plot_combo = combo.plot
+beta_plot_table = table.plot
 beta_plot_text = flash_card
 
 parse_url_var = urlparser.parse_url_var
