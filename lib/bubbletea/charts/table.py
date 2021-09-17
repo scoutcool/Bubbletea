@@ -1,6 +1,5 @@
 from functools import reduce
 from typing import Optional
-import streamlit as st
 from pandas import DataFrame
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 
@@ -28,19 +27,25 @@ def plot(df: DataFrame, columnDefs: list[dict], pageSize: Optional[int]):
 
     """
 
+    COL_ROW_INDEX = "__row_index__"
+    df[COL_ROW_INDEX] = "#"
+
     gb = GridOptionsBuilder.from_dataframe(
         df[
             reduce(
                 lambda seq, cd: [*seq, cd["field"], cd["href"]]
                 if "href" in cd
                 else [*seq, cd["field"]],
-                columnDefs,
+                [
+                    {
+                        "field": COL_ROW_INDEX,
+                    },
+                    *columnDefs,
+                ],
                 [],
             )
         ],
     )
-
-    gb.configure_default_column(groupable=True)
 
     cellsytle_jscode = JsCode(
         """
@@ -50,6 +55,19 @@ def plot(df: DataFrame, columnDefs: list[dict], pageSize: Optional[int]):
             }
         };
         """
+    )
+
+    gb.configure_column(
+        COL_ROW_INDEX, headerName="#", valueGetter="node.rowIndex + 1", width=24
+    )
+
+    refresh_row_index_jscode = JsCode(
+        """
+        function(e) {
+            e.api.refreshCells({columns: ["%s"], force: true, suppressFlash: true}); 
+        }
+        """
+        % (COL_ROW_INDEX)
     )
 
     for columnDef in columnDefs:
@@ -69,18 +87,28 @@ def plot(df: DataFrame, columnDefs: list[dict], pageSize: Optional[int]):
                 cellRenderer=link_jscode,
                 cellStyle=cellsytle_jscode,
             )
+        elif df[columnDef["field"]].dtypes.kind == "M":
+            gb.configure_column(
+                **columnDef, cellStyle=cellsytle_jscode, type=["dateColumnFilter"]
+            )
         else:
+
             gb.configure_column(
                 **columnDef,
                 cellStyle=cellsytle_jscode,
             )
 
-    gb.configure_side_bar()
+    # gb.configure_side_bar() # side bar is enterprise feature
     gb.configure_selection("disabled")
     gb.configure_pagination(
         paginationAutoPageSize=(pageSize == None), paginationPageSize=(pageSize or 10)
     )
-    gb.configure_grid_options(domLayout="normal")
+    gb.configure_auto_height(False)
+    gb.configure_grid_options(
+        enableCellChangeFlash=True,
+        onSortChanged=refresh_row_index_jscode,
+        onFilterChanged=refresh_row_index_jscode,
+    )
     gridOptions = gb.build()
 
     AgGrid(
