@@ -37,10 +37,20 @@ def plot(df: DataFrame, columnDefs: list[dict], pageSize: Optional[int]):
                 columnDefs,
                 [],
             )
-        ]
+        ],
     )
 
     gb.configure_default_column(groupable=True)
+
+    cellsytle_jscode = JsCode(
+        """
+        function(params) {
+            return {
+                'font-family': 'monospace',
+            }
+        };
+        """
+    )
 
     for columnDef in columnDefs:
         if "href" in columnDef:
@@ -54,9 +64,16 @@ def plot(df: DataFrame, columnDefs: list[dict], pageSize: Optional[int]):
             )
             gb.configure_column(field=columnDef["href"], hide=True)
             del columnDef["href"]
-            gb.configure_column(**columnDef, cellRenderer=link_jscode)
+            gb.configure_column(
+                **columnDef,
+                cellRenderer=link_jscode,
+                cellStyle=cellsytle_jscode,
+            )
         else:
-            gb.configure_column(**columnDef)
+            gb.configure_column(
+                **columnDef,
+                cellStyle=cellsytle_jscode,
+            )
 
     gb.configure_side_bar()
     gb.configure_selection("disabled")
