@@ -58,7 +58,14 @@ def plot(df: DataFrame, columnDefs: list[dict], pageSize: Optional[int]):
     )
 
     gb.configure_column(
-        COL_ROW_INDEX, headerName="#", valueGetter="node.rowIndex + 1", width=24
+        COL_ROW_INDEX,
+        headerName="#",
+        valueGetter="node.rowIndex + 1",
+        width=32,
+        suppressMenu=True,
+        pinned=True,
+        lockPinned=True,
+        sortable=False,
     )
 
     refresh_row_index_jscode = JsCode(
