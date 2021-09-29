@@ -46,13 +46,15 @@ class ColumnConfig:
         aggregate_method: AggregateMethod,
         type:ColumnType=None,
         na_fill_method: NaInterpolationMethod = None,
-        na_fill_value=None
+        na_fill_value=None,
+        alias:str=None
     ) -> None:
         self.name = name
         self.aggregate_method = aggregate_method
         self.na_fill_method = na_fill_method
         self.na_fill_value = na_fill_value
         self.type = type
+        self.alias = alias
         pass
 
 
@@ -147,6 +149,8 @@ def beta_aggregate_timeseries(
             _df = _df.reindex(idx, fill_value=c.na_fill_value)
         else:
             _df = _df.reindex(idx)
+        if c.alias:
+            _df = _df.rename(columns={c.name:c.alias})
         _df.index.names = [time_column]
 
         if interval == TimeseriesInterval.WEEKLY:
@@ -179,12 +183,20 @@ def beta_aggregate_groupby(
                 df[c.name] = df[c.name].apply(lambda x: Decimal(x))
             else:
                 df[c.name] = df[c.name].astype(c.type, copy=False, errors="ignore")
-        params[c.name] = pd.NamedAgg(column=c.name, aggfunc=c.aggregate_method)
+        cname = c.name
+        if c.alias:
+            cname = c.alias
+        params[cname] = pd.NamedAgg(column=c.name, aggfunc=c.aggregate_method)
 
     df = df.groupby(by_column).agg(**params)
     for c in columns:
+        cname = c.name
+        if c.alias:
+            cname = c.alias
         if c.na_fill_method != None:
-            df[c.name] = df[c.name].fillna(method=c.na_fill_method)
+            df[cname] = df[cname].fillna(method=c.na_fill_method)
         elif c.na_fill_value != None:
-            df[c.name] = df[c.name].fillna(c.na_fill_value)
+            df[cname] = df[cname].fillna(c.na_fill_value)
+        # if c.alias:
+        #     df = df.rename(columns={c.name:c.alias})
     return df
