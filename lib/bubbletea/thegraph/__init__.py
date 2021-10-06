@@ -40,7 +40,7 @@ class SubgraphHashReference:
         self.useBigDecimal = useBigDecimal
 
 def hash_subgraph_ref(hashRef):
-    hash =  f"{hashRef.url}_{hashRef.query}_{hashRef.progressCallback}_{hashRef.useBigDecimal}"
+    hash =  f"bubbletea_beta_load_subgraph_{hashRef.url}_{hashRef.query}_{hashRef.progressCallback}_{hashRef.useBigDecimal}"
     return hash
 
 
