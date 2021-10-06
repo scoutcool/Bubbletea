@@ -52,4 +52,6 @@ if selected_demo in files:
     with display:
         exec(code_input)
 else:
-    exec(code_input)
+    with open(f'./examples/{selected_demo}', 'r') as file:
+        code_input = file.read()
+        exec(code_input)

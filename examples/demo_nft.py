@@ -1,49 +1,58 @@
-import time
-import math
 import bubbletea
 import streamlit as st
+from datetime import datetime
+import pandas as pd
 
 
-from dotenv import load_dotenv
+urlvars = bubbletea.parse_url_var([{'key':'starttimestamp','type':'int'}, {'key':'endtimestamp','type':'int'}])
+try:
+    end_timestamp = urlvars['endtimestamp']
+except KeyError:
+    end_timestamp = 1630648800
 
-load_dotenv()
+try:
+    start_timestamp = urlvars['starttimestamp']
+except KeyError:
+    start_timestamp = end_timestamp - 21600
 
+bubbletea.update_url({'starttimestamp': start_timestamp, 'endtimestamp': end_timestamp})
 
-st.header("OPEN SEA ")
-end_timestamp = math.floor(time.time())
+st.header(f"ERC721 Transfer Stats")
+st.markdown(f"Query this [subgraph](https://thegraph.com/studio/subgraph/os_erc721/). From _{datetime.fromtimestamp(start_timestamp)}_ to _{datetime.fromtimestamp(end_timestamp)}_")
 
-# end_timestamp = 1633020435
-start_timestamp = end_timestamp - 43200
-
-
-
-#Load txs
 
 placeholder = st.empty()
-def on_progress(obj):
-    msg = f"{obj['transferEvents']} txs loaded."
+def on_subgraph_progress(obj):
+    msg = f"{obj['transferEvents']} transferEvents loaded."
     placeholder.text(msg)
-    
-subgraph_url = "https://api.studio.thegraph.com/query/8794/nft/0.0.19"
-query = """
-{
-transferEvents(where:{timestamp_gte:%s, timestamp_lt:%s, txEth_gt:0}, bypassPagination:true) {
-  id
-  timestamp
-  txEth
-  txHash
-  contract{
-    address
-    name
-  }
-}}
-""" % (start_timestamp, end_timestamp)
 
-with st.spinner("Loading txs"):
-    df = bubbletea.beta_load_subgraph(subgraph_url, query)
-df = df['transferEvents']
+def query_subgraph():
+    subgraph_url = "https://api.studio.thegraph.com/query/702/os_erc721/0.0.1"
+    query = """
+    {
+    transferEvents(where:{timestamp_gte:%s, timestamp_lt:%s, txEth_gt:0}, bypassPagination:true) {
+    timestamp
+    txEth
+    txHash
+    contract{
+        address
+        name
+    }
+    }}
+    """ % (start_timestamp, end_timestamp)
+    return bubbletea.beta_load_subgraph(subgraph_url, query, on_subgraph_progress)
+
+with st.spinner("Querying subgraph"):
+    df_raw = query_subgraph()
+df = df_raw['transferEvents']
+if(len(df) == 0):
+    st.warning(f"No data available.")
+    pass
+
 df['txEth'] /= 1000000000
-st.write(df)
+
+if st.checkbox("Display transfer data"):
+    st.write(df)
 
 df = bubbletea.beta_aggregate_groupby(
     df,
@@ -71,7 +80,57 @@ df = bubbletea.beta_aggregate_groupby(
 
 df['timestamp'] = df['timestamp'].apply(lambda x: pd.to_datetime(int(x), unit='s'))
 
-st.subheader("12H")
+st.subheader("Hourly Volume and Txs Count")
+df_period = bubbletea.beta_aggregate_timeseries(
+    df,
+    'timestamp',
+    interval=bubbletea.TimeseriesInterval.HOURLY,
+    columns=[
+        bubbletea.ColumnConfig(
+            name='txEth',
+            alias='eth_volume',
+            aggregate_method=bubbletea.AggregateMethod.SUM,
+            na_fill_value=0.0
+        ),
+        bubbletea.ColumnConfig(
+            name='txEth',
+            alias='tx_count',
+            aggregate_method=bubbletea.AggregateMethod.COUNT,
+            na_fill_value=0.0
+        )
+    ]
+)
+df_period = df_period.rename(columns={"txEth_x":"ETH", "txEth_y":"Tx Count"})
+df_period.index.names = ['timestamp']
+
+if st.checkbox("Display hourly data"):
+    st.write(df_period)
+    
+bubbletea.beta_plot_combo(
+    df_period,
+    x={
+        "field": "timestamp",
+    },
+    yLeft={
+        "title": "Volume",
+        "stack": False,
+        "marker": bubbletea.line.MARKER,
+        "data": [
+            {"title": "Volume", "field": "eth_volume"}
+        ],
+    },
+    yRight = {
+        "title": "Txs Count",
+        "stack": False,
+        "marker": bubbletea.line.MARKER,
+        "data": [
+            {"title": "Txs Count", "field": "tx_count"}
+        ],
+    },
+    legend="none",
+)
+
+
 df_c = bubbletea.beta_aggregate_groupby(
     df,
     by_column="contract.address",
@@ -114,11 +173,14 @@ df_c = bubbletea.beta_aggregate_groupby(
 )
 
 
-st.subheader("Top NFTs")
+st.subheader("Top Tokens")
 
 df_c = df_c.rename(columns={'contract.name':'contract'})
 df_c["contract_url"] = "https://etherscan.io/address/" + df_c.index
-st.write(df_c)
+df_c = df_c.sort_values(by=['eth_sum', 'tx_count'], ascending=False)
+
+if st.checkbox("Display by-collection data"):
+    st.write(df_c)
 
 bubbletea.beta_plot_table(
     df_c,
@@ -153,5 +215,5 @@ bubbletea.beta_plot_table(
             "valueFormatter": 'Math.floor(value).toString().replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, "$1,")',
         },
     ],
-    pageSize=10,
+    pageSize=20,
 )

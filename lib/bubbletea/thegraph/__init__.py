@@ -32,6 +32,19 @@ Return:
 ```
 
 """
+class SubgraphHashReference:
+    def __init__(self, url:str, query:str, progressCallback=None, useBigDecimal=False):
+        self.url = url
+        self.query = query
+        self.progressCallback = progressCallback
+        self.useBigDecimal = useBigDecimal
+
+def hash_subgraph_ref(hashRef):
+    hash =  f"{hashRef.url}_{hashRef.query}_{hashRef.progressCallback}_{hashRef.useBigDecimal}"
+    return hash
+
+
+@st.cache(show_spinner=False, hash_funcs={SubgraphHashReference: hash_subgraph_ref})
 def beta_load_subgraph(url:str, query:str, progressCallback=None, useBigDecimal=False):
     sl = SubgraphLoader(url, query)
     return sl.beta_load_subgraph(progressCallback, useBigDecimal)
@@ -58,10 +71,7 @@ def beta_load_subgraphs(defs:list[SubgraphDef]):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(defs)) as executor:
         future_to_url = {executor.submit(beta_load_subgraph, d.url, d.query, d.progressCallback, d.useBigDecimal): d for d in defs}
-        # future_to_url = {executor.submit(beta_load_subgraph, d.url, d.query, d.progressCallback, d.useBigDecimal) for d in defs}
-        # for thread in executor._threads:
-        #     add_report_ctx(thread)
-
+        
         for future in concurrent.futures.as_completed(future_to_url):
             d = future_to_url[future]
             try:
