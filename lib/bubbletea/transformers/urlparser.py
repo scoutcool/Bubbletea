@@ -12,7 +12,7 @@ def parse_url_var(specs:list):
                 if t == 'datetime':
                     value = datetime.date.fromisoformat(value)
                 elif t == 'int':
-                    value = int(t)
+                    value = int(value)
             result[k['key']] = value
     return result
 
