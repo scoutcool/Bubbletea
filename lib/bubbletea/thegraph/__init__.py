@@ -44,7 +44,7 @@ def hash_subgraph_ref(hashRef):
     return hash
 
 
-@st.cache(show_spinner=False, hash_funcs={SubgraphHashReference: hash_subgraph_ref})
+@st.cache(show_spinner=False, hash_funcs={SubgraphHashReference: hash_subgraph_ref}, allow_output_mutation=True)
 def beta_load_subgraph(url:str, query:str, progressCallback=None, useBigDecimal=False):
     sl = SubgraphLoader(url, query)
     return sl.beta_load_subgraph(progressCallback, useBigDecimal)
