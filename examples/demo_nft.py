@@ -2,6 +2,7 @@ import bubbletea
 import streamlit as st
 from datetime import datetime
 import pandas as pd
+import altair as alt
 
 
 urlvars = bubbletea.parse_url_var([{'key':'starttimestamp','type':'int'}, {'key':'endtimestamp','type':'int'}])
@@ -118,6 +119,7 @@ bubbletea.beta_plot_combo(
         "data": [
             {"title": "Volume", "field": "eth_volume"}
         ],
+        "scale": alt.Scale(zero=False),
     },
     yRight = {
         "title": "Txs Count",
@@ -126,6 +128,7 @@ bubbletea.beta_plot_combo(
         "data": [
             {"title": "Txs Count", "field": "tx_count"}
         ],
+        "scale": alt.Scale(zero=False),
     },
     legend="none",
 )
