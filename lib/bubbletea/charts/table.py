@@ -61,7 +61,7 @@ def plot(df: DataFrame, columnDefs: list[dict], pageSize: Optional[int]):
         COL_ROW_INDEX,
         headerName="#",
         valueGetter="node.rowIndex + 1",
-        width=32,
+        width=75,
         suppressMenu=True,
         pinned=True,
         lockPinned=True,
