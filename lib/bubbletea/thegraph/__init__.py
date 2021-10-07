@@ -1,7 +1,6 @@
 from .__core.SubgraphLoader import SubgraphLoader
 import streamlit as st
 import concurrent.futures
-from streamlit.report_thread import add_report_ctx
 
 class SubgraphDef:
     def __init__(self, url:str, query:str, progressCallback=None, useBigDecimal=False) -> None:

@@ -122,7 +122,6 @@ def beta_aggregate_timeseries(
         df[time_column] = pd.to_datetime(df[time_column], unit=unit)
 
     df = df.set_index(time_column)
-    # print(df)
 
     result_df = None
     i = 0
@@ -140,7 +139,7 @@ def beta_aggregate_timeseries(
         _df.index.names = [time_column]
         # print(f'\n\naggregated\n{_df}')
 
-        idx = pd.date_range(start=tmin, end=tmax, freq=interval)
+        idx = pd.date_range(start=tmin, end=tmax, freq=interval, closed='left')
         if c.na_fill_method != None:
             _df = _df.fillna(method=c.na_fill_method)
             _df = _df.reindex(idx, method=c.na_fill_method)
