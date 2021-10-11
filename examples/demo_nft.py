@@ -14,7 +14,13 @@ except KeyError:
 try:
     start_timestamp = urlvars['starttimestamp']
 except KeyError:
-    start_timestamp = end_timestamp - 21600
+    start_timestamp = end_timestamp - 3600 * 4#21600
+
+
+try:
+    debugMode = bool(urlvars['debg'])
+except KeyError:
+    debugMode = False
 
 bubbletea.update_url({'starttimestamp': start_timestamp, 'endtimestamp': end_timestamp})
 
@@ -52,8 +58,9 @@ if(len(df) == 0):
 
 df['txEth'] /= 1000000000
 
-if st.checkbox("Display transfer data"):
-    st.write(df)
+if  debugMode:
+    if st.checkbox("Display transfer data"):
+        st.write(df)
 
 df = bubbletea.beta_aggregate_groupby(
     df,
@@ -104,8 +111,9 @@ df_period = bubbletea.beta_aggregate_timeseries(
 df_period = df_period.rename(columns={"txEth_x":"ETH", "txEth_y":"Tx Count"})
 df_period.index.names = ['timestamp']
 
-if st.checkbox("Display hourly data"):
-    st.write(df_period)
+if  debugMode:
+    if st.checkbox("Display hourly data"):
+        st.write(df_period)
     
 bubbletea.beta_plot_combo(
     df_period,
@@ -182,8 +190,9 @@ df_c = df_c.rename(columns={'contract.name':'contract'})
 df_c["contract_url"] = "https://etherscan.io/address/" + df_c.index
 df_c = df_c.sort_values(by=['eth_sum', 'tx_count'], ascending=False)
 
-if st.checkbox("Display by-collection data"):
-    st.write(df_c)
+if  debugMode:
+    if st.checkbox("Display by-collection data"):
+        st.write(df_c)
 
 bubbletea.beta_plot_table(
     df_c,
