@@ -1,9 +1,10 @@
 import bubbletea
+import numpy as np
 import streamlit as st
 from datetime import datetime
 import pandas as pd
 import altair as alt
-
+debugMode = False
 
 urlvars = bubbletea.parse_url_var([{'key':'starttimestamp','type':'int'}, {'key':'endtimestamp','type':'int'}])
 try:
@@ -16,12 +17,6 @@ try:
 except KeyError:
     start_timestamp = end_timestamp - 3600 * 4#21600
 
-
-try:
-    debugMode = bool(urlvars['debg'])
-except KeyError:
-    debugMode = False
-
 bubbletea.update_url({'starttimestamp': start_timestamp, 'endtimestamp': end_timestamp})
 
 st.header(f"ERC721 Transfer Stats")
@@ -33,6 +28,7 @@ def on_subgraph_progress(obj):
     msg = f"{obj['transferEvents']} transferEvents loaded."
     placeholder.text(msg)
 
+# @st.cache(show_spinner=False, allow_output_mutation=True)
 def query_subgraph():
     subgraph_url = "https://api.studio.thegraph.com/query/702/os_erc721/0.0.1"
     query = """
@@ -56,7 +52,7 @@ if(len(df) == 0):
     st.warning(f"No data available.")
     pass
 
-df['txEth'] /= 1000000000
+df['txEth'] /= 1000000000000000000
 
 if  debugMode:
     if st.checkbox("Display transfer data"):
@@ -109,7 +105,6 @@ df_period = bubbletea.beta_aggregate_timeseries(
     ]
 )
 df_period = df_period.rename(columns={"txEth_x":"ETH", "txEth_y":"Tx Count"})
-df_period.index.names = ['timestamp']
 
 if  debugMode:
     if st.checkbox("Display hourly data"):
@@ -190,9 +185,16 @@ df_c = df_c.rename(columns={'contract.name':'contract'})
 df_c["contract_url"] = "https://etherscan.io/address/" + df_c.index
 df_c = df_c.sort_values(by=['eth_sum', 'tx_count'], ascending=False)
 
+
+df_c.index.names = ['address']
+df_c = df_c.reset_index()
+df_c['contract'] = df_c['contract'].replace(r'^\s*$', np.NaN, regex=True)
+df_c["contract"].fillna(df_c['address'], inplace=True)
+
 if  debugMode:
     if st.checkbox("Display by-collection data"):
         st.write(df_c)
+
 
 bubbletea.beta_plot_table(
     df_c,
