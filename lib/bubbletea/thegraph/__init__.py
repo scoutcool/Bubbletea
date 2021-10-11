@@ -31,19 +31,6 @@ Return:
 ```
 
 """
-class SubgraphHashReference:
-    def __init__(self, url:str, query:str, progressCallback=None, useBigDecimal=False):
-        self.url = url
-        self.query = query
-        self.progressCallback = progressCallback
-        self.useBigDecimal = useBigDecimal
-
-def hash_subgraph_ref(hashRef):
-    hash =  f"bubbletea_beta_load_subgraph_{hashRef.url}_{hashRef.query}_{hashRef.progressCallback}_{hashRef.useBigDecimal}"
-    return hash
-
-
-@st.cache(show_spinner=False, hash_funcs={SubgraphHashReference: hash_subgraph_ref}, allow_output_mutation=True)
 def beta_load_subgraph(url:str, query:str, progressCallback=None, useBigDecimal=False):
     sl = SubgraphLoader(url, query)
     return sl.beta_load_subgraph(progressCallback, useBigDecimal)
