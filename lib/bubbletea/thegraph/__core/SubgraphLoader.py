@@ -5,6 +5,17 @@ from decimal import Decimal
 import requests
 import pandas as pd
 from graphql import parse
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+import urllib.parse
+
+s = requests.Session()
+
+retries = Retry(total=5,
+                backoff_factor=0.2,
+                status_forcelist=[ 500, 502, 503, 504, 522 ])
+
+# s.mount('https://api.studio.thegraph.com', HTTPAdapter(max_retries=retries))
 
 class SubgraphLoader:
     def __init__(self, subgraphUrl:str, query) -> None:
@@ -34,22 +45,24 @@ class SubgraphLoader:
         return entities
 
 
-    class SubgraphHashReference:
-        def __init__(self, url:str, query:str, progressCallback=None, useBigDecimal=False):
-            self.url = url
-            self.query = query
-            self.progressCallback = progressCallback
-            self.useBigDecimal = useBigDecimal
+    # class SubgraphHashReference:
+    #     def __init__(self, url:str, query:str, progressCallback=None, useBigDecimal=False):
+    #         self.url = url
+    #         self.query = query
+    #         self.progressCallback = progressCallback
+    #         self.useBigDecimal = useBigDecimal
 
-    def hash_subgraph_ref(hashRef):
-        hash =  f"bubbletea_load_subgraph_{hashRef.url}_{hashRef.query}_{hashRef.progressCallback}_{hashRef.useBigDecimal}"
-        return hash
-
+    # def hash_subgraph_ref(hashRef):
+    #     hash =  f"bubbletea_load_subgraph_{hashRef.url}_{hashRef.query}_{hashRef.progressCallback}_{hashRef.useBigDecimal}"
+    #     return hash
 
     # @st.cache(show_spinner=False, hash_funcs={SubgraphHashReference: hash_subgraph_ref}, allow_output_mutation=True)
     @st.cache(show_spinner=False)
     def _load_subgraph_query(self, url, query):
-        response = requests.post(url, json={'query': query})
+
+        parsed_url = urllib.parse.urlparse(url)
+        s.mount(f"{parsed_url.scheme}://{parsed_url.netloc}", HTTPAdapter(max_retries=retries))
+        response = s.post(url, json={'query':query})
         return schema_utils.process_response_to_json(response)
 
     def _process_datatypes(self, entity:TheGraphEntity, data, useBigDecimal):
