@@ -180,7 +180,7 @@ df_c = bubbletea.beta_aggregate_groupby(
     ],
 )
 
-st.subheader("6H Opeasea Market Overview")
+st.subheader("Opeasea Market Overview")
 
 df_c = df_c.rename(columns={'contract.name':'contract'})
 df_c["contract_url"] = "https://etherscan.io/address/" + df_c.index
