@@ -16,7 +16,7 @@ except KeyError:
 try:
     start_timestamp = urlvars['starttimestamp']
 except KeyError:
-    start_timestamp = end_timestamp - 3600 * 2#21600
+    start_timestamp = end_timestamp - 3600 * 6#21600
 
 bubbletea.update_url({'starttimestamp': start_timestamp, 'endtimestamp': end_timestamp})
 
@@ -179,6 +179,8 @@ df_c = bubbletea.beta_aggregate_groupby(
         )
     ],
 )
+
+st.subheader("6H Opeasea Market Overview")
 
 df_c = df_c.rename(columns={'contract.name':'contract'})
 df_c["contract_url"] = "https://etherscan.io/address/" + df_c.index
