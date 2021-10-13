@@ -5,6 +5,7 @@ from datetime import datetime
 import pandas as pd
 import altair as alt
 debugMode = False
+showDailyChart = False
 
 urlvars = bubbletea.parse_url_var([{'key':'starttimestamp','type':'int'}, {'key':'endtimestamp','type':'int'}])
 try:
@@ -15,7 +16,7 @@ except KeyError:
 try:
     start_timestamp = urlvars['starttimestamp']
 except KeyError:
-    start_timestamp = end_timestamp - 3600 * 4#21600
+    start_timestamp = end_timestamp - 3600 * 2#21600
 
 bubbletea.update_url({'starttimestamp': start_timestamp, 'endtimestamp': end_timestamp})
 
@@ -84,57 +85,58 @@ df = bubbletea.beta_aggregate_groupby(
 
 df['timestamp'] = df['timestamp'].apply(lambda x: pd.to_datetime(int(x), unit='s'))
 
-st.subheader("Hourly Volume and Txs Count")
-df_period = bubbletea.beta_aggregate_timeseries(
-    df,
-    'timestamp',
-    interval=bubbletea.TimeseriesInterval.HOURLY,
-    columns=[
-        bubbletea.ColumnConfig(
-            name='txEth',
-            alias='eth_volume',
-            aggregate_method=bubbletea.AggregateMethod.SUM,
-            na_fill_value=0.0
-        ),
-        bubbletea.ColumnConfig(
-            name='txEth',
-            alias='tx_count',
-            aggregate_method=bubbletea.AggregateMethod.COUNT,
-            na_fill_value=0.0
-        )
-    ]
-)
-df_period = df_period.rename(columns={"txEth_x":"ETH", "txEth_y":"Tx Count"})
+if showDailyChart:
+    st.subheader("Hourly Volume and Txs Count")
+    df_period = bubbletea.beta_aggregate_timeseries(
+        df,
+        'timestamp',
+        interval=bubbletea.TimeseriesInterval.HOURLY,
+        columns=[
+            bubbletea.ColumnConfig(
+                name='txEth',
+                alias='eth_volume',
+                aggregate_method=bubbletea.AggregateMethod.SUM,
+                na_fill_value=0.0
+            ),
+            bubbletea.ColumnConfig(
+                name='txEth',
+                alias='tx_count',
+                aggregate_method=bubbletea.AggregateMethod.COUNT,
+                na_fill_value=0.0
+            )
+        ]
+    )
+    df_period = df_period.rename(columns={"txEth_x":"ETH", "txEth_y":"Tx Count"})
 
-if  debugMode:
-    if st.checkbox("Display hourly data"):
-        st.write(df_period)
-    
-bubbletea.beta_plot_combo(
-    df_period,
-    x={
-        "field": "timestamp",
-    },
-    yLeft={
-        "title": "Volume",
-        "stack": False,
-        "marker": bubbletea.line.MARKER,
-        "data": [
-            {"title": "Volume", "field": "eth_volume"}
-        ],
-        "scale": alt.Scale(zero=False),
-    },
-    yRight = {
-        "title": "Txs Count",
-        "stack": False,
-        "marker": bubbletea.line.MARKER,
-        "data": [
-            {"title": "Txs Count", "field": "tx_count"}
-        ],
-        "scale": alt.Scale(zero=False),
-    },
-    legend="none",
-)
+    if  debugMode:
+        if st.checkbox("Display hourly data"):
+            st.write(df_period)
+        
+    bubbletea.beta_plot_combo(
+        df_period,
+        x={
+            "field": "timestamp",
+        },
+        yLeft={
+            "title": "Volume",
+            "stack": False,
+            "marker": bubbletea.line.MARKER,
+            "data": [
+                {"title": "Volume", "field": "eth_volume"}
+            ],
+            "scale": alt.Scale(zero=False),
+        },
+        yRight = {
+            "title": "Txs Count",
+            "stack": False,
+            "marker": bubbletea.line.MARKER,
+            "data": [
+                {"title": "Txs Count", "field": "tx_count"}
+            ],
+            "scale": alt.Scale(zero=False),
+        },
+        legend="none",
+    )
 
 
 df_c = bubbletea.beta_aggregate_groupby(
@@ -178,9 +180,6 @@ df_c = bubbletea.beta_aggregate_groupby(
     ],
 )
 
-
-st.subheader("Top Tokens")
-
 df_c = df_c.rename(columns={'contract.name':'contract'})
 df_c["contract_url"] = "https://etherscan.io/address/" + df_c.index
 df_c = df_c.sort_values(by=['eth_sum', 'tx_count'], ascending=False)
@@ -195,7 +194,6 @@ if  debugMode:
     if st.checkbox("Display by-collection data"):
         st.write(df_c)
 
-
 bubbletea.beta_plot_table(
     df_c,
     [
@@ -207,7 +205,7 @@ bubbletea.beta_plot_table(
         {
             "field": "eth_sum",
             "headerName": "Volume (ETH)",
-            "valueFormatter": 'Math.floor(value).toString().replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, "$1,")',
+            "valueFormatter": 'value.toFixed(2).replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, "$1,")',
         },
         {
             "field": "tx_count",
@@ -216,17 +214,17 @@ bubbletea.beta_plot_table(
         {
             "field": "eth_max",
             "headerName": "Max Price (ETH)",
-            "valueFormatter": 'Math.floor(value).toString().replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, "$1,")',
+            "valueFormatter": 'value.toFixed(2).replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, "$1,")',
         },
         {
             "field": "eth_min",
             "headerName": "Min Price (ETH)",
-            "valueFormatter": 'Math.floor(value).toString().replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, "$1,")',
+            "valueFormatter": 'value.toFixed(2).replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, "$1,")',
         },
         {
             "field": "eth_mean",
             "headerName": "Avg Price (ETH)",
-            "valueFormatter": 'Math.floor(value).toString().replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, "$1,")',
+            "valueFormatter": 'value.toFixed(2).replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, "$1,")',
         },
     ],
     pageSize=20,
